@@ -16,6 +16,39 @@
             <textarea id="description" name="description" rows="4" style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 4px; font-size: 14px; font-family: inherit;"></textarea>
         </div>
         <div style="margin-bottom: 20px;">
+            <label style="display: block; margin-bottom: 8px; font-weight: 500;">Due Date</label>
+            <div style="display: flex; gap: 10px;">
+                <input type="date" id="due_date_date" name="due_date_date" style="flex: 1; padding: 10px; border: 1px solid #ddd; border-radius: 4px; font-size: 14px;">
+                <select id="due_date_hour" name="due_date_hour" style="padding: 10px; border: 1px solid #ddd; border-radius: 4px; font-size: 14px;">
+                    <option value="">Hour (optional)</option>
+                    <option value="00">12 AM</option>
+                    <option value="01">1 AM</option>
+                    <option value="02">2 AM</option>
+                    <option value="03">3 AM</option>
+                    <option value="04">4 AM</option>
+                    <option value="05">5 AM</option>
+                    <option value="06">6 AM</option>
+                    <option value="07">7 AM</option>
+                    <option value="08">8 AM</option>
+                    <option value="09">9 AM</option>
+                    <option value="10">10 AM</option>
+                    <option value="11">11 AM</option>
+                    <option value="12">12 PM</option>
+                    <option value="13">1 PM</option>
+                    <option value="14">2 PM</option>
+                    <option value="15">3 PM</option>
+                    <option value="16">4 PM</option>
+                    <option value="17">5 PM</option>
+                    <option value="18">6 PM</option>
+                    <option value="19">7 PM</option>
+                    <option value="20">8 PM</option>
+                    <option value="21">9 PM</option>
+                    <option value="22">10 PM</option>
+                    <option value="23">11 PM</option>
+                </select>
+            </div>
+        </div>
+        <div style="margin-bottom: 20px;">
             <label style="display: block; margin-bottom: 8px; font-weight: 500;">Categories</label>
             {% if categories %}
                 {% for category in categories %}

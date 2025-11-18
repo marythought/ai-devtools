@@ -17,21 +17,23 @@ class TodoModelTests(TestCase):
         self.assertEqual(todo.title, 'Test Todo')
         self.assertEqual(todo.description, 'Test Description')
         self.assertEqual(todo.user, self.user)
-        self.assertFalse(todo.completed)
+        self.assertIsNone(todo.completed_at)
+        self.assertFalse(todo.is_completed)
 
     def test_todo_str_method(self):
         todo = Todo.objects.create(title='My Todo', user=self.user)
         self.assertEqual(str(todo), 'My Todo')
 
     def test_todo_ordering(self):
-        todo1 = Todo.objects.create(title='Incomplete', completed=False, user=self.user)
-        todo2 = Todo.objects.create(title='Completed', completed=True, user=self.user)
-        todo3 = Todo.objects.create(title='Also Incomplete', completed=False, user=self.user)
+        from django.utils import timezone
+        todo1 = Todo.objects.create(title='Incomplete', user=self.user)
+        todo2 = Todo.objects.create(title='Completed', completed_at=timezone.now(), user=self.user)
+        todo3 = Todo.objects.create(title='Also Incomplete', user=self.user)
 
         todos = Todo.objects.all()
-        self.assertEqual(todos[0].completed, False)
-        self.assertEqual(todos[1].completed, False)
-        self.assertEqual(todos[2].completed, True)
+        self.assertIsNone(todos[0].completed_at)
+        self.assertIsNone(todos[1].completed_at)
+        self.assertIsNotNone(todos[2].completed_at)
 
 
 class TodoListViewTests(TestCase):
@@ -133,7 +135,7 @@ class ToggleTodoViewTests(TestCase):
     def setUp(self):
         self.client = Client()
         self.user = User.objects.create_user(username='testuser', password='testpass123')
-        self.todo = Todo.objects.create(title='Test Todo', completed=False, user=self.user)
+        self.todo = Todo.objects.create(title='Test Todo', user=self.user)
 
     def test_redirect_if_not_logged_in(self):
         response = self.client.post(reverse('toggle_todo', args=[self.todo.id]))
@@ -144,11 +146,13 @@ class ToggleTodoViewTests(TestCase):
         response = self.client.post(reverse('toggle_todo', args=[self.todo.id]))
         self.assertEqual(response.status_code, 302)
         self.todo.refresh_from_db()
-        self.assertTrue(self.todo.completed)
+        self.assertIsNotNone(self.todo.completed_at)
+        self.assertTrue(self.todo.is_completed)
 
         response = self.client.post(reverse('toggle_todo', args=[self.todo.id]))
         self.todo.refresh_from_db()
-        self.assertFalse(self.todo.completed)
+        self.assertIsNone(self.todo.completed_at)
+        self.assertFalse(self.todo.is_completed)
 
 
 class DeleteTodoViewTests(TestCase):
@@ -315,3 +319,83 @@ class CategoryFilterTests(TestCase):
         category_names = [cat.name for cat in categories]
         self.assertIn('Home Care', category_names)
         self.assertIn('Job Search', category_names)
+
+
+class DueDateTests(TestCase):
+    def setUp(self):
+        self.client = Client()
+        self.user = User.objects.create_user(username='testuser', password='testpass123')
+
+    def test_create_todo_with_due_date(self):
+        self.client.login(username='testuser', password='testpass123')
+
+        response = self.client.post(reverse('create_todo'), {
+            'title': 'Todo with due date',
+            'description': 'This has a deadline',
+            'due_date_date': '2025-11-25',
+            'due_date_hour': '14'
+        })
+        self.assertEqual(response.status_code, 302)
+        todo = Todo.objects.first()
+        self.assertEqual(todo.title, 'Todo with due date')
+        self.assertIsNotNone(todo.due_date)
+        self.assertEqual(todo.due_date.hour, 14)
+
+    def test_create_todo_without_due_date(self):
+        self.client.login(username='testuser', password='testpass123')
+        response = self.client.post(reverse('create_todo'), {
+            'title': 'Todo without due date',
+            'description': 'No deadline'
+        })
+        self.assertEqual(response.status_code, 302)
+        todo = Todo.objects.first()
+        self.assertEqual(todo.title, 'Todo without due date')
+        self.assertIsNone(todo.due_date)
+
+    def test_edit_todo_add_due_date(self):
+        self.client.login(username='testuser', password='testpass123')
+        todo = Todo.objects.create(title='Test Todo', user=self.user)
+        self.assertIsNone(todo.due_date)
+
+        response = self.client.post(reverse('edit_todo', args=[todo.id]), {
+            'title': 'Updated Todo',
+            'description': 'Updated',
+            'due_date_date': '2025-11-21',
+            'due_date_hour': '09'
+        })
+        self.assertEqual(response.status_code, 302)
+        todo.refresh_from_db()
+        self.assertIsNotNone(todo.due_date)
+        self.assertEqual(todo.due_date.hour, 9)
+
+    def test_edit_todo_remove_due_date(self):
+        from django.utils import timezone
+        self.client.login(username='testuser', password='testpass123')
+        due_date = timezone.now() + timezone.timedelta(days=5)
+        todo = Todo.objects.create(title='Test Todo', user=self.user, due_date=due_date)
+        self.assertIsNotNone(todo.due_date)
+
+        response = self.client.post(reverse('edit_todo', args=[todo.id]), {
+            'title': 'Updated Todo',
+            'description': 'Updated',
+            'due_date_date': '',
+            'due_date_hour': ''
+        })
+        self.assertEqual(response.status_code, 302)
+        todo.refresh_from_db()
+        self.assertIsNone(todo.due_date)
+
+    def test_create_todo_with_date_only(self):
+        self.client.login(username='testuser', password='testpass123')
+
+        response = self.client.post(reverse('create_todo'), {
+            'title': 'Todo with date only',
+            'description': 'No specific hour',
+            'due_date_date': '2025-11-30',
+            'due_date_hour': ''
+        })
+        self.assertEqual(response.status_code, 302)
+        todo = Todo.objects.first()
+        self.assertEqual(todo.title, 'Todo with date only')
+        self.assertIsNotNone(todo.due_date)
+        self.assertEqual(todo.due_date.hour, 0)

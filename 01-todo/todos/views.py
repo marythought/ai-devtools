@@ -27,11 +27,22 @@ class TodoListView(LoginRequiredMixin, ListView):
 @login_required
 def create_todo(request):
     if request.method == 'POST':
+        from django.utils import timezone
+        from datetime import datetime
         title = request.POST.get('title')
         description = request.POST.get('description', '')
         category_ids = request.POST.getlist('categories')
+        due_date_date = request.POST.get('due_date_date')
+        due_date_hour = request.POST.get('due_date_hour')
+
+        due_date = None
+        if due_date_date:
+            hour = int(due_date_hour) if due_date_hour else 0
+            naive_dt = datetime.strptime(due_date_date, '%Y-%m-%d').replace(hour=hour, minute=0, second=0)
+            due_date = timezone.make_aware(naive_dt)
+
         if title:
-            todo = Todo.objects.create(title=title, description=description, user=request.user)
+            todo = Todo.objects.create(title=title, description=description, user=request.user, due_date=due_date)
             if category_ids:
                 todo.categories.set(category_ids)
         return redirect('todo_list')
@@ -41,8 +52,12 @@ def create_todo(request):
 
 @login_required
 def toggle_todo(request, todo_id):
+    from django.utils import timezone
     todo = get_object_or_404(Todo, id=todo_id, user=request.user)
-    todo.completed = not todo.completed
+    if todo.completed_at:
+        todo.completed_at = None
+    else:
+        todo.completed_at = timezone.now()
     todo.save()
     return redirect('todo_list')
 
@@ -51,12 +66,24 @@ def toggle_todo(request, todo_id):
 def edit_todo(request, todo_id):
     todo = get_object_or_404(Todo, id=todo_id, user=request.user)
     if request.method == 'POST':
+        from django.utils import timezone
+        from datetime import datetime
         title = request.POST.get('title')
         description = request.POST.get('description', '')
         category_ids = request.POST.getlist('categories')
+        due_date_date = request.POST.get('due_date_date')
+        due_date_hour = request.POST.get('due_date_hour')
+
+        due_date = None
+        if due_date_date:
+            hour = int(due_date_hour) if due_date_hour else 0
+            naive_dt = datetime.strptime(due_date_date, '%Y-%m-%d').replace(hour=hour, minute=0, second=0)
+            due_date = timezone.make_aware(naive_dt)
+
         if title:
             todo.title = title
             todo.description = description
+            todo.due_date = due_date
             todo.save()
             todo.categories.set(category_ids)
         return redirect('todo_list')

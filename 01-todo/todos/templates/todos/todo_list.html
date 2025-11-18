@@ -28,9 +28,9 @@
     {% if todos %}
         <div style="display: flex; flex-direction: column; gap: 15px;">
             {% for todo in todos %}
-                <div style="border: 1px solid #ddd; padding: 15px; border-radius: 4px; display: flex; justify-content: space-between; align-items: start; {% if todo.completed %}background-color: #f8f9fa;{% endif %}">
+                <div style="border: 1px solid #ddd; padding: 15px; border-radius: 4px; display: flex; justify-content: space-between; align-items: start; {% if todo.is_completed %}background-color: #f8f9fa;{% endif %}">
                     <div style="flex: 1;">
-                        <h3 style="margin-bottom: 8px; {% if todo.completed %}text-decoration: line-through; color: #6c757d;{% endif %}">
+                        <h3 style="margin-bottom: 8px; {% if todo.is_completed %}text-decoration: line-through; color: #6c757d;{% endif %}">
                             {{ todo.title }}
                         </h3>
                         {% if todo.description %}
@@ -45,6 +45,12 @@
                         {% endif %}
                         <small style="color: #999;">
                             Created: {{ todo.created_at|date:"M d, Y H:i" }}
+                            {% if todo.due_date %}
+                                <br>Due: {{ todo.due_date|date:"M d, Y" }}{% if todo.due_date.hour > 0 or todo.due_date.minute > 0 %} at {{ todo.due_date|date:"g A" }}{% endif %}
+                            {% endif %}
+                            {% if todo.completed_at %}
+                                <br>Completed: {{ todo.completed_at|date:"M d, Y H:i" }}
+                            {% endif %}
                         </small>
                     </div>
                     <div style="display: flex; gap: 10px;">
@@ -53,8 +59,8 @@
                         </a>
                         <form method="post" action="{% url 'toggle_todo' todo.id %}" style="display: inline;">
                             {% csrf_token %}
-                            <button type="submit" class="btn {% if todo.completed %}btn-success{% endif %}" style="padding: 8px 16px; font-size: 12px;">
-                                {% if todo.completed %}Mark Incomplete{% else %}Mark Complete{% endif %}
+                            <button type="submit" class="btn {% if todo.is_completed %}btn-success{% endif %}" style="padding: 8px 16px; font-size: 12px;">
+                                {% if todo.is_completed %}Mark Incomplete{% else %}Mark Complete{% endif %}
                             </button>
                         </form>
                         <form method="post" action="{% url 'delete_todo' todo.id %}" style="display: inline;">

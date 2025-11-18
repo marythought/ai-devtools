@@ -17,6 +17,14 @@ Each project folder contains its own README with specific setup instructions.
 - Python 3.9+
 - Django 4.2+
 
+## Development
+
+See [DEVELOPMENT_NOTES.md](DEVELOPMENT_NOTES.md) for important lessons learned and best practices for working with this codebase.
+
 ## About
 
 This repository showcases practical applications built with AI assistance, demonstrating modern development workflows and best practices.
+
+## Resources
+
+Homework tracking: https://courses.datatalks.club/ai-dev-tools-2025/

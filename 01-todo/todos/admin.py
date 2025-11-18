@@ -11,8 +11,8 @@ class CategoryAdmin(admin.ModelAdmin):
 
 @admin.register(Todo)
 class TodoAdmin(admin.ModelAdmin):
-    list_display = ('title', 'completed', 'created_at', 'updated_at')
-    list_filter = ('completed', 'created_at', 'categories')
+    list_display = ('title', 'due_date', 'completed_at', 'created_at', 'updated_at')
+    list_filter = ('completed_at', 'due_date', 'created_at', 'categories')
     search_fields = ('title', 'description')
     ordering = ('-created_at',)
     filter_horizontal = ('categories',)
