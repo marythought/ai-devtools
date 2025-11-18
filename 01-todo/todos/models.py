@@ -2,6 +2,19 @@ from django.db import models
 from django.contrib.auth.models import User
 
 
+class Category(models.Model):
+    name = models.CharField(max_length=100, unique=True)
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='categories')
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ['name']
+        verbose_name_plural = 'Categories'
+
+    def __str__(self):
+        return self.name
+
+
 class Todo(models.Model):
     title = models.CharField(max_length=200)
     description = models.TextField(blank=True)
@@ -9,6 +22,7 @@ class Todo(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='todos', null=True, blank=True)
+    categories = models.ManyToManyField(Category, related_name='todos', blank=True)
 
     class Meta:
         ordering = ['completed', '-created_at']

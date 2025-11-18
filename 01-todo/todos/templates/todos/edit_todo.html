@@ -15,6 +15,23 @@
             <label for="description" style="display: block; margin-bottom: 8px; font-weight: 500;">Description</label>
             <textarea id="description" name="description" rows="4" style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 4px; font-size: 14px; font-family: inherit;">{{ todo.description }}</textarea>
         </div>
+        <div style="margin-bottom: 20px;">
+            <label style="display: block; margin-bottom: 8px; font-weight: 500;">Categories</label>
+            {% if categories %}
+                {% for category in categories %}
+                    <div style="margin-bottom: 5px;">
+                        <label style="display: inline-flex; align-items: center; cursor: pointer;">
+                            <input type="checkbox" name="categories" value="{{ category.id }}"
+                                {% if category in todo.categories.all %}checked{% endif %}
+                                style="margin-right: 8px;">
+                            <span>{{ category.name }}</span>
+                        </label>
+                    </div>
+                {% endfor %}
+            {% else %}
+                <p style="color: #999; font-size: 14px; font-style: italic;">No categories yet. Create some in the admin panel!</p>
+            {% endif %}
+        </div>
         <div style="display: flex; gap: 10px;">
             <button type="submit" class="btn">Save Changes</button>
             <a href="{% url 'todo_list' %}" class="btn" style="background-color: #6c757d;">Cancel</a>

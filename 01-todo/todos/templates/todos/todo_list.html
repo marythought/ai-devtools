@@ -9,6 +9,22 @@
         <a href="{% url 'create_todo' %}" class="btn">Add New TODO</a>
     </div>
 
+    <!-- Category Tabs -->
+    <div style="margin-bottom: 20px; border-bottom: 2px solid #ddd;">
+        <div style="display: flex; gap: 5px; flex-wrap: wrap;">
+            <a href="{% url 'todo_list' %}"
+               style="padding: 10px 20px; text-decoration: none; border: 1px solid #ddd; border-bottom: none; border-radius: 4px 4px 0 0; {% if not selected_category %}background-color: white; border-bottom: 2px solid white; margin-bottom: -2px; font-weight: bold; color: #007bff;{% else %}background-color: #f8f9fa; color: #666;{% endif %}">
+                All TODOs
+            </a>
+            {% for category in categories %}
+                <a href="?category={{ category.id }}"
+                   style="padding: 10px 20px; text-decoration: none; border: 1px solid #ddd; border-bottom: none; border-radius: 4px 4px 0 0; {% if selected_category == category.id|stringformat:'s' %}background-color: white; border-bottom: 2px solid white; margin-bottom: -2px; font-weight: bold; color: #007bff;{% else %}background-color: #f8f9fa; color: #666;{% endif %}">
+                    {{ category.name }}
+                </a>
+            {% endfor %}
+        </div>
+    </div>
+
     {% if todos %}
         <div style="display: flex; flex-direction: column; gap: 15px;">
             {% for todo in todos %}
@@ -19,6 +35,13 @@
                         </h3>
                         {% if todo.description %}
                             <p style="color: #666; margin-bottom: 8px;">{{ todo.description }}</p>
+                        {% endif %}
+                        {% if todo.categories.exists %}
+                            <div style="margin-bottom: 8px;">
+                                {% for category in todo.categories.all %}
+                                    <span style="background-color: #007bff; color: white; padding: 4px 8px; border-radius: 12px; font-size: 11px; margin-right: 4px; display: inline-block;">{{ category.name }}</span>
+                                {% endfor %}
+                            </div>
                         {% endif %}
                         <small style="color: #999;">
                             Created: {{ todo.created_at|date:"M d, Y H:i" }}
