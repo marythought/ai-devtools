@@ -62,7 +62,7 @@
                     </div>
                 {% endfor %}
             {% else %}
-                <p style="color: #999; font-size: 14px; font-style: italic;">No categories yet. Create some in the admin panel!</p>
+                <p style="color: #999; font-size: 14px; font-style: italic;">No categories yet. <a href="{% url 'manage_categories' %}" style="color: #007bff;">Create one now!</a></p>
             {% endif %}
         </div>
         <div style="display: flex; gap: 10px;">

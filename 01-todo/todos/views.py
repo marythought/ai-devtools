@@ -97,3 +97,42 @@ def delete_todo(request, todo_id):
     if request.method == 'POST':
         todo.delete()
     return redirect('todo_list')
+
+
+@login_required
+def manage_categories(request):
+    if request.method == 'POST':
+        name = request.POST.get('name')
+        if name:
+            Category.objects.create(name=name, user=request.user)
+        return redirect('manage_categories')
+    categories = Category.objects.filter(user=request.user)
+    return render(request, 'todos/manage_categories.html', {'categories': categories})
+
+
+@login_required
+def delete_category(request, category_id):
+    category = get_object_or_404(Category, id=category_id, user=request.user)
+    if request.method == 'POST':
+        category.delete()
+    return redirect('manage_categories')
+
+
+@login_required
+def reorder_categories(request):
+    if request.method == 'POST':
+        import json
+        from django.http import JsonResponse
+        try:
+            data = json.loads(request.body)
+            category_ids = data.get('category_ids', [])
+
+            for index, category_id in enumerate(category_ids):
+                category = Category.objects.get(id=category_id, user=request.user)
+                category.order = index
+                category.save()
+
+            return JsonResponse({'status': 'success'})
+        except Exception as e:
+            return JsonResponse({'status': 'error', 'message': str(e)}, status=400)
+    return JsonResponse({'status': 'error'}, status=400)
