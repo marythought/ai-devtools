@@ -1,0 +1,23 @@
+{% extends 'todos/base.html' %}
+
+{% block title %}Create TODO{% endblock %}
+
+{% block content %}
+    <h1>Create New TODO</h1>
+
+    <form method="post" style="margin-top: 20px;">
+        {% csrf_token %}
+        <div style="margin-bottom: 20px;">
+            <label for="title" style="display: block; margin-bottom: 8px; font-weight: 500;">Title *</label>
+            <input type="text" id="title" name="title" required style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 4px; font-size: 14px;">
+        </div>
+        <div style="margin-bottom: 20px;">
+            <label for="description" style="display: block; margin-bottom: 8px; font-weight: 500;">Description</label>
+            <textarea id="description" name="description" rows="4" style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 4px; font-size: 14px; font-family: inherit;"></textarea>
+        </div>
+        <div style="display: flex; gap: 10px;">
+            <button type="submit" class="btn">Create TODO</button>
+            <a href="{% url 'todo_list' %}" class="btn" style="background-color: #6c757d;">Cancel</a>
+        </div>
+    </form>
+{% endblock %}
