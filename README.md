@@ -5,16 +5,9 @@ This repository contains projects built as part of learning AI-assisted developm
 ## Projects
 
 ### 01-todo - Django TODO Application
-A full-stack TODO application built with Django featuring:
-- User authentication (login, register, logout)
-- User-specific TODO lists
-- Create, read, update, delete operations
-- Automatic sorting (incomplete tasks first, completed tasks at bottom)
-- Clean, modern UI
+A full-stack TODO application built with Django featuring user authentication and CRUD operations.
 
 **Tech Stack:** Python, Django, SQLite
-
-See [01-todo/homework.md](01-todo/homework.md) for more details about the project requirements.
 
 ## Getting Started
 

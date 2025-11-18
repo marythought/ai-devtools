@@ -34,6 +34,20 @@ def toggle_todo(request, todo_id):
 
 
 @login_required
+def edit_todo(request, todo_id):
+    todo = get_object_or_404(Todo, id=todo_id, user=request.user)
+    if request.method == 'POST':
+        title = request.POST.get('title')
+        description = request.POST.get('description', '')
+        if title:
+            todo.title = title
+            todo.description = description
+            todo.save()
+        return redirect('todo_list')
+    return render(request, 'todos/edit_todo.html', {'todo': todo})
+
+
+@login_required
 def delete_todo(request, todo_id):
     todo = get_object_or_404(Todo, id=todo_id, user=request.user)
     if request.method == 'POST':
