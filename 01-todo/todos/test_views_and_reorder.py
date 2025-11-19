@@ -75,8 +75,8 @@ class ViewsAndReorderTests(TestCase):
 
     def test_reorder_todos_failure_and_success(self):
         # create ordering where an incomplete comes after a completed (should error)
-        # mark t3 as incomplete (it is), t2 is completed
-        todo_ids = [self.t3.id, self.t2.id]
+        # place completed before incomplete to trigger the error
+        todo_ids = [self.t2.id, self.t3.id]
         resp = self.client.post(
             reverse("reorder_todos"),
             data=json.dumps({"todo_ids": todo_ids}),

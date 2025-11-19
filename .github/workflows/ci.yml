@@ -1,9 +1,6 @@
 name: CI for TODO App
 
 on:
-  push:
-    paths:
-      - '01-todo/**'
   pull_request:
     paths:
       - '01-todo/**'
