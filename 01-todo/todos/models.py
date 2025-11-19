@@ -1,16 +1,16 @@
-from django.db import models
 from django.contrib.auth.models import User
+from django.db import models
 
 
 class Category(models.Model):
     name = models.CharField(max_length=100, unique=True)
-    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='categories')
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="categories")
     created_at = models.DateTimeField(auto_now_add=True)
     order = models.IntegerField(default=0)
 
     class Meta:
-        ordering = ['order', 'name']
-        verbose_name_plural = 'Categories'
+        ordering = ["order", "name"]
+        verbose_name_plural = "Categories"
 
     def __str__(self):
         return self.name
@@ -23,8 +23,10 @@ class Todo(models.Model):
     completed_at = models.DateTimeField(null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
-    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='todos', null=True, blank=True)
-    categories = models.ManyToManyField(Category, related_name='todos', blank=True)
+    user = models.ForeignKey(
+        User, on_delete=models.CASCADE, related_name="todos", null=True, blank=True
+    )
+    categories = models.ManyToManyField(Category, related_name="todos", blank=True)
     order = models.IntegerField(default=0)
 
     class Meta:
@@ -33,8 +35,8 @@ class Todo(models.Model):
                 models.When(completed_at__isnull=True, then=0),
                 default=1,
             ),
-            'order',
-            '-created_at'
+            "order",
+            "-created_at",
         ]
 
     def __str__(self):

@@ -1,2 +1,8 @@
 Django==4.2.26
 whitenoise==6.5.0
+
+# Development dependencies
+black==24.10.0
+flake8==7.1.1
+isort==5.13.2
+pre-commit==4.0.1

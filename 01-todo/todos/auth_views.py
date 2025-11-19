@@ -1,43 +1,43 @@
-from django.shortcuts import render, redirect
-from django.contrib.auth import login, logout, authenticate
-from django.contrib.auth.forms import UserCreationForm, AuthenticationForm
 from django.contrib import messages
+from django.contrib.auth import authenticate, login, logout
+from django.contrib.auth.forms import AuthenticationForm, UserCreationForm
+from django.shortcuts import redirect, render
 
 
 def register_view(request):
-    if request.method == 'POST':
+    if request.method == "POST":
         form = UserCreationForm(request.POST)
         if form.is_valid():
             user = form.save()
             login(request, user)
-            messages.success(request, 'Registration successful!')
-            return redirect('todo_list')
+            messages.success(request, "Registration successful!")
+            return redirect("todo_list")
         else:
-            messages.error(request, 'Registration failed. Please correct the errors.')
+            messages.error(request, "Registration failed. Please correct the errors.")
     else:
         form = UserCreationForm()
-    return render(request, 'todos/register.html', {'form': form})
+    return render(request, "todos/register.html", {"form": form})
 
 
 def login_view(request):
-    if request.method == 'POST':
+    if request.method == "POST":
         form = AuthenticationForm(request, data=request.POST)
         if form.is_valid():
-            username = form.cleaned_data.get('username')
-            password = form.cleaned_data.get('password')
+            username = form.cleaned_data.get("username")
+            password = form.cleaned_data.get("password")
             user = authenticate(username=username, password=password)
             if user is not None:
                 login(request, user)
-                messages.success(request, f'Welcome back, {username}!')
-                return redirect('todo_list')
+                messages.success(request, f"Welcome back, {username}!")
+                return redirect("todo_list")
         else:
-            messages.error(request, 'Invalid username or password.')
+            messages.error(request, "Invalid username or password.")
     else:
         form = AuthenticationForm()
-    return render(request, 'todos/login.html', {'form': form})
+    return render(request, "todos/login.html", {"form": form})
 
 
 def logout_view(request):
     logout(request)
-    messages.info(request, 'You have been logged out.')
-    return redirect('login')
+    messages.info(request, "You have been logged out.")
+    return redirect("login")

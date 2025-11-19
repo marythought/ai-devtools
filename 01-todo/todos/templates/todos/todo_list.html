@@ -73,14 +73,14 @@
                             <div style="display: flex; gap: 8px;">
                                 <form method="post" action="{% url 'toggle_todo' todo.id %}" style="display: inline;">
                                     {% csrf_token %}
-                                    <button type="submit" class="btn" style="padding: 8px 16px; font-size: 12px;">
-                                        Mark Complete
+                                    <button type="submit" class="btn" style="padding: 8px 16px; font-size: 12px; background-color: #28a745; border-color: #28a745;">
+                                        Dunzo
                                     </button>
                                 </form>
                                 <form method="post" action="{% url 'complete_and_followup' todo.id %}" style="display: inline;">
                                     {% csrf_token %}
-                                    <button type="submit" class="btn" style="padding: 8px 16px; font-size: 12px; background-color: #28a745; border-color: #28a745;">
-                                        Complete + Followup
+                                    <button type="submit" class="btn" style="padding: 8px 16px; font-size: 12px;">
+                                        ✅ & Followup
                                     </button>
                                 </form>
                             </div>
