@@ -54,7 +54,7 @@
                 {% for category in categories %}
                     <div style="margin-bottom: 5px;">
                         <label style="display: inline-flex; align-items: center; cursor: pointer;">
-                            <input type="checkbox" name="categories" value="{{ category.id }}" style="margin-right: 8px;">
+                            <input type="checkbox" name="categories" value="{{ category.id }}" {% if category.id in preselected_category_ids %}checked{% endif %} style="margin-right: 8px;">
                             <span>{{ category.name }}</span>
                         </label>
                     </div>

@@ -15,12 +15,19 @@ class TodoListView(LoginRequiredMixin, ListView):
         category_id = self.request.GET.get('category')
         if category_id:
             queryset = queryset.filter(categories__id=category_id)
+
+        # Filter by completion status
+        show_completed = self.request.GET.get('show_completed', 'true')
+        if show_completed == 'false':
+            queryset = queryset.filter(completed_at__isnull=True)
+
         return queryset
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context['categories'] = Category.objects.filter(user=self.request.user)
         context['selected_category'] = self.request.GET.get('category')
+        context['show_completed'] = self.request.GET.get('show_completed', 'true')
         return context
 
 
@@ -46,8 +53,16 @@ def create_todo(request):
             if category_ids:
                 todo.categories.set(category_ids)
         return redirect('todo_list')
+
+    # Get pre-selected category IDs from URL parameters
+    preselected_category_ids = request.GET.getlist('category')
+    preselected_category_ids = [int(cat_id) for cat_id in preselected_category_ids if cat_id.isdigit()]
+
     categories = Category.objects.filter(user=request.user)
-    return render(request, 'todos/create_todo.html', {'categories': categories})
+    return render(request, 'todos/create_todo.html', {
+        'categories': categories,
+        'preselected_category_ids': preselected_category_ids
+    })
 
 
 @login_required
@@ -59,6 +74,29 @@ def toggle_todo(request, todo_id):
     else:
         todo.completed_at = timezone.now()
     todo.save()
+    return redirect('todo_list')
+
+
+@login_required
+def complete_and_followup(request, todo_id):
+    from django.utils import timezone
+    todo = get_object_or_404(Todo, id=todo_id, user=request.user)
+
+    if request.method == 'POST':
+        # Mark the todo as completed
+        todo.completed_at = timezone.now()
+        todo.save()
+
+        # Get the category IDs from the completed todo
+        category_ids = list(todo.categories.values_list('id', flat=True))
+
+        # Redirect to create_todo with category pre-selected
+        if category_ids:
+            category_params = '&'.join([f'category={cat_id}' for cat_id in category_ids])
+            return redirect(f"/create/?{category_params}")
+        else:
+            return redirect('create_todo')
+
     return redirect('todo_list')
 
 

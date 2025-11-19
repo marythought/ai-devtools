@@ -5,20 +5,28 @@
 {% block content %}
     <h1>My TODO List</h1>
 
-    <div style="margin-bottom: 20px; display: flex; gap: 10px;">
-        <a href="{% url 'create_todo' %}" class="btn">Add New TODO</a>
-        <a href="{% url 'manage_categories' %}" class="btn" style="background-color: #6c757d;">Manage Categories</a>
+    <div style="margin-bottom: 20px; display: flex; gap: 10px; align-items: center; justify-content: space-between;">
+        <div style="display: flex; gap: 10px;">
+            <a href="{% url 'create_todo' %}" class="btn">Add New TODO</a>
+            <a href="{% url 'manage_categories' %}" class="btn" style="background-color: #6c757d;">Manage Categories</a>
+        </div>
+        <div style="display: flex; align-items: center; gap: 10px;">
+            <label style="display: flex; align-items: center; cursor: pointer; user-select: none;">
+                <input type="checkbox" id="show-completed-toggle" {% if show_completed == 'true' %}checked{% endif %} style="margin-right: 8px; cursor: pointer; width: 18px; height: 18px;">
+                <span style="font-size: 14px; font-weight: 500;">Show Completed</span>
+            </label>
+        </div>
     </div>
 
     <!-- Category Tabs -->
     <div style="margin-bottom: 20px; border-bottom: 2px solid #ddd;">
         <div style="display: flex; gap: 5px; flex-wrap: wrap;">
-            <a href="{% url 'todo_list' %}"
+            <a href="?show_completed={{ show_completed }}"
                style="padding: 10px 20px; text-decoration: none; border: 1px solid #ddd; border-bottom: none; border-radius: 4px 4px 0 0; {% if not selected_category %}background-color: white; border-bottom: 2px solid white; margin-bottom: -2px; font-weight: bold; color: #007bff;{% else %}background-color: #f8f9fa; color: #666;{% endif %}">
                 All TODOs
             </a>
             {% for category in categories %}
-                <a href="?category={{ category.id }}"
+                <a href="?category={{ category.id }}&show_completed={{ show_completed }}"
                    style="padding: 10px 20px; text-decoration: none; border: 1px solid #ddd; border-bottom: none; border-radius: 4px 4px 0 0; {% if selected_category == category.id|stringformat:'s' %}background-color: white; border-bottom: 2px solid white; margin-bottom: -2px; font-weight: bold; color: #007bff;{% else %}background-color: #f8f9fa; color: #666;{% endif %}">
                     {{ category.name }}
                 </a>
@@ -55,12 +63,29 @@
                         </div>
                     </div>
                     <div style="display: flex; flex-direction: column; align-items: flex-end; gap: 10px;">
-                        <form method="post" action="{% url 'toggle_todo' todo.id %}" style="display: inline;">
-                            {% csrf_token %}
-                            <button type="submit" class="btn {% if todo.is_completed %}btn-success{% endif %}" style="padding: 8px 16px; font-size: 12px;">
-                                {% if todo.is_completed %}Mark Incomplete{% else %}Mark Complete{% endif %}
-                            </button>
-                        </form>
+                        {% if not todo.is_completed %}
+                            <div style="display: flex; gap: 8px;">
+                                <form method="post" action="{% url 'toggle_todo' todo.id %}" style="display: inline;">
+                                    {% csrf_token %}
+                                    <button type="submit" class="btn" style="padding: 8px 16px; font-size: 12px;">
+                                        Mark Complete
+                                    </button>
+                                </form>
+                                <form method="post" action="{% url 'complete_and_followup' todo.id %}" style="display: inline;">
+                                    {% csrf_token %}
+                                    <button type="submit" class="btn" style="padding: 8px 16px; font-size: 12px; background-color: #28a745; border-color: #28a745;">
+                                        Complete + Followup
+                                    </button>
+                                </form>
+                            </div>
+                        {% else %}
+                            <form method="post" action="{% url 'toggle_todo' todo.id %}" style="display: inline;">
+                                {% csrf_token %}
+                                <button type="submit" class="btn btn-success" style="padding: 8px 16px; font-size: 12px;">
+                                    Mark Incomplete
+                                </button>
+                            </form>
+                        {% endif %}
                         <div style="display: flex; gap: 10px; font-size: 12px;">
                             <a href="{% url 'edit_todo' todo.id %}" style="color: #dc3545; text-decoration: none;">Edit</a>
                             <form method="post" action="{% url 'delete_todo' todo.id %}" style="display: inline; margin: 0;">
@@ -77,6 +102,21 @@
     {% endif %}
 
     <script>
+        // Handle show completed toggle
+        const showCompletedToggle = document.getElementById('show-completed-toggle');
+        if (showCompletedToggle) {
+            showCompletedToggle.addEventListener('change', function() {
+                const urlParams = new URLSearchParams(window.location.search);
+                if (this.checked) {
+                    urlParams.set('show_completed', 'true');
+                } else {
+                    urlParams.set('show_completed', 'false');
+                }
+                window.location.search = urlParams.toString();
+            });
+        }
+
+        // Drag and drop functionality
         const todoList = document.getElementById('todo-list');
         if (todoList) {
             let draggedElement = null;
