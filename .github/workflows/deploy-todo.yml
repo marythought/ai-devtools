@@ -1,10 +1,16 @@
-name: Deploy to PythonAnywhere
+name: Deploy TODO App to PythonAnywhere
 
 on:
   push:
     branches:
       - main
+    paths:
+      - '01-todo/**'
   workflow_dispatch:  # Allow manual triggering from GitHub UI
+
+defaults:
+  run:
+    working-directory: 01-todo
 
 jobs:
   test:
