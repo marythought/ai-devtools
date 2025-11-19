@@ -89,18 +89,17 @@ The CI/CD pipeline runs in two stages:
 
 To make deployments fully automatic, you need to configure PythonAnywhere to pull code from GitHub automatically:
 
-#### Option 1: Using a Post-Deploy Hook (Recommended)
+#### Option 1: GitHub Webhook (Recommended - Fully Automatic)
 
-1. SSH into your PythonAnywhere bash console
-2. Add the deployment script to run after GitHub notifies:
+**This is the best option!** GitHub will automatically notify your app when code is pushed, triggering immediate deployment.
 
-```bash
-cd ~/ai-devtools/01-todo
-# Make sure the script exists and is executable
-chmod +x bin/deploy_pythonanywhere.sh
-```
+📖 **See [WEBHOOK_SETUP.md](WEBHOOK_SETUP.md) for complete webhook setup instructions.**
 
-3. Set up a webhook endpoint in your Django app (or use the manual approach below)
+Quick summary:
+1. Configure webhook secret in Django settings
+2. Deploy the webhook code to PythonAnywhere
+3. Add webhook in GitHub repository settings
+4. Done! Deployments happen automatically on push to main
 
 #### Option 2: Manual Deployment Process
 
