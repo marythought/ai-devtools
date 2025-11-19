@@ -2,6 +2,7 @@ name: Deploy TODO App
 
 # Trigger deployment only when the CI workflow completes successfully.
 on:
+  workflow_dispatch:
   workflow_run:
     workflows:
       - "CI for TODO App"

@@ -1,7 +1,10 @@
 name: CI for TODO App
 
 on:
+  workflow_dispatch:
   pull_request:
+    branches:
+      - main
     paths:
       - '01-todo/**'
   push:
@@ -63,7 +66,9 @@ jobs:
     - name: Run tests with coverage
       run: |
         python -m coverage run --source='.' manage.py test
+        python -m coverage report --fail-under=80
         python -m coverage xml -i
+        python -m coverage html -i
       env:
         PYTHONPATH: ${{ github.workspace }}/01-todo
         DJANGO_SETTINGS_MODULE: todo_project.settings
@@ -77,3 +82,10 @@ jobs:
         files: coverage.xml
         # If your repo is private you may need to set CODECOV_TOKEN in GitHub Secrets
         token: ${{ secrets.CODECOV_TOKEN }}
+
+    - name: Upload coverage HTML report
+      if: always()
+      uses: actions/upload-artifact@v4
+      with:
+        name: coverage-report
+        path: 01-todo/htmlcov/
