@@ -8,7 +8,7 @@ set -e  # Exit on error
 echo "Starting deployment..."
 
 # Activate virtual environment
-source ~/venv/bin/activate
+source ~/.virtualenvs/ai-devtools/bin/activate
 
 # Navigate to project directory
 cd ~/ai-devtools/01-todo

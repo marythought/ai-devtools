@@ -35,13 +35,22 @@ git clone https://github.com/YOUR_USERNAME/ai-devtools.git
 cd ai-devtools/01-todo
 ```
 
-### 4. Create Virtual Environment
+### 4. Virtual Environment
 
+Your virtual environment should be at:
 ```bash
-cd ~
-python3.9 -m venv venv
-source venv/bin/activate
-pip install -r ai-devtools/01-todo/requirements.txt
+~/.virtualenvs/ai-devtools
+```
+
+To activate it:
+```bash
+source ~/.virtualenvs/ai-devtools/bin/activate
+```
+
+Install dependencies:
+```bash
+cd ~/ai-devtools/01-todo
+pip install -r requirements.txt
 ```
 
 ## GitHub Secrets Setup
@@ -111,7 +120,7 @@ Set up a scheduled task on PythonAnywhere to pull code every few minutes:
 1. Go to PythonAnywhere Dashboard → Tasks
 2. Create a new task that runs every hour (or daily):
 ```bash
-cd /home/YOURUSERNAME/ai-devtools/01-todo && git pull origin main && source /home/YOURUSERNAME/venv/bin/activate && pip install -r requirements.txt && python manage.py migrate && python manage.py collectstatic --noinput
+cd /home/marythought/ai-devtools/01-todo && git pull origin main && source /home/marythought/.virtualenvs/ai-devtools/bin/activate && pip install -r requirements.txt && python manage.py migrate && python manage.py collectstatic --noinput
 ```
 
 This way, your app will automatically pull and deploy changes regularly.
