@@ -65,12 +65,8 @@ jobs:
 
     - name: Run tests with coverage
       run: |
-        python -m coverage run --source='.' manage.py test
-        python -m coverage report --fail-under=80
-        python -m coverage xml -i
-        python -m coverage html -i
+        pytest --cov=. --cov-report=term-missing --cov-report=xml --cov-report=html --cov-fail-under=80
       env:
-        PYTHONPATH: ${{ github.workspace }}/01-todo
         DJANGO_SETTINGS_MODULE: todo_project.settings
         SECRET_KEY: test-secret-key-for-ci
         DEBUG: 'False'

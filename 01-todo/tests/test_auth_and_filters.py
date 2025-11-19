@@ -7,21 +7,21 @@ from todos.templatetags.repeat_tags import repeat
 from todos.views import parse_due_date
 
 
-class AuthAndFilterTests(TestCase):
+class AuthenticationAndUtilityTests(TestCase):
     def test_repeat_filter_and_parse_due_date(self):
         # repeat filter valid
-        assert repeat("x", 3) == "xxx"
-        assert repeat("x", "2") == "xx"
-        assert repeat("x", 0) == ""
-        assert repeat("x", "bad") == ""
+        self.assertEqual(repeat("x", 3), "xxx")
+        self.assertEqual(repeat("x", "2"), "xx")
+        self.assertEqual(repeat("x", 0), "")
+        self.assertEqual(repeat("x", "bad"), "")
 
         # parse_due_date
         d = parse_due_date("2025-11-19", "5")
-        assert d is not None
-        assert d.tzinfo is not None
+        self.assertIsNotNone(d)
+        self.assertIsNotNone(d.tzinfo)
 
         none_dt = parse_due_date("", None)
-        assert none_dt is None
+        self.assertIsNone(none_dt)
 
     def test_register_login_logout_views(self):
         register_url = reverse("register")

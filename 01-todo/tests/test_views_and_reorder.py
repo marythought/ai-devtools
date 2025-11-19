@@ -9,7 +9,7 @@ from django.utils import timezone
 from todos.models import Category, Todo
 
 
-class ViewsAndReorderTests(TestCase):
+class TodoViewsAndReorderingTests(TestCase):
     def setUp(self):
         self.user = User.objects.create_user(username="u2", password="pw")
         self.client.force_login(self.user)
