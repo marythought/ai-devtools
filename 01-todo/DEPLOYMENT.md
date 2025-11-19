@@ -87,12 +87,12 @@ If you need to deploy manually, you can SSH into PythonAnywhere and run:
 
 ```bash
 cd ~/ai-devtools/01-todo
-./deploy_pythonanywhere.sh
+./bin/deploy_pythonanywhere.sh
 ```
 
 Make sure the script is executable:
 ```bash
-chmod +x deploy_pythonanywhere.sh
+chmod +x bin/deploy_pythonanywhere.sh
 ```
 
 ## Troubleshooting
