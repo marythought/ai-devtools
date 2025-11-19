@@ -60,9 +60,10 @@ jobs:
 
     - name: Run tests with coverage
       run: |
-        coverage run --source='.' manage.py test
-        coverage xml -i
+        python -m coverage run --source='.' manage.py test
+        python -m coverage xml -i
       env:
+        PYTHONPATH: ${{ github.workspace }}/01-todo
         DJANGO_SETTINGS_MODULE: todo_project.settings
         SECRET_KEY: test-secret-key-for-ci
         DEBUG: 'False'
