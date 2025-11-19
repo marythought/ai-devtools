@@ -45,27 +45,51 @@ jobs:
     steps:
     - uses: actions/checkout@v3
 
-    - name: Trigger PythonAnywhere reload
+    - name: Deploy to PythonAnywhere
       env:
         PYTHONANYWHERE_USERNAME: ${{ secrets.PYTHONANYWHERE_USERNAME }}
         PYTHONANYWHERE_API_TOKEN: ${{ secrets.PYTHONANYWHERE_API_TOKEN }}
         PYTHONANYWHERE_DOMAIN: ${{ secrets.PYTHONANYWHERE_DOMAIN }}
       run: |
-        # Reload the web app using PythonAnywhere API
-        response=$(curl -s -w "\n%{http_code}" -X POST \
-          "https://www.pythonanywhere.com/api/v0/user/${PYTHONANYWHERE_USERNAME}/webapps/${PYTHONANYWHERE_DOMAIN}/reload/" \
-          -H "Authorization: Token ${PYTHONANYWHERE_API_TOKEN}")
+        echo "Starting deployment to PythonAnywhere..."
 
-        http_code=$(echo "$response" | tail -n1)
-        body=$(echo "$response" | head -n-1)
+        # Create a bash console and run deployment commands
+        console_response=$(curl -s -w "\n%{http_code}" -X POST \
+          "https://www.pythonanywhere.com/api/v0/user/${PYTHONANYWHERE_USERNAME}/consoles/" \
+          -H "Authorization: Token ${PYTHONANYWHERE_API_TOKEN}" \
+          -d "executable=bash" \
+          -d "arguments=-c" \
+          -d "arguments=cd /home/${PYTHONANYWHERE_USERNAME}/ai-devtools/01-todo && git pull origin main && source /home/${PYTHONANYWHERE_USERNAME}/.virtualenvs/ai-devtools/bin/activate && pip install -r requirements.txt && python manage.py migrate && python manage.py collectstatic --noinput")
 
-        echo "Response: $body"
-        echo "HTTP Code: $http_code"
+        console_http_code=$(echo "$console_response" | tail -n1)
+        console_body=$(echo "$console_response" | head -n-1)
 
-        if [ "$http_code" != "200" ]; then
-          echo "Failed to reload web app. HTTP code: $http_code"
-          echo "Response: $body"
+        echo "Console API response: $console_body"
+
+        if [ "$console_http_code" != "200" ] && [ "$console_http_code" != "201" ]; then
+          echo "Failed to run deployment commands. HTTP code: $console_http_code"
           exit 1
         fi
 
-        echo "Successfully reloaded ${PYTHONANYWHERE_DOMAIN}"
+        echo "Deployment commands executed successfully"
+
+        # Wait a moment for commands to complete
+        sleep 5
+
+        # Reload the web app
+        echo "Reloading web app..."
+        reload_response=$(curl -s -w "\n%{http_code}" -X POST \
+          "https://www.pythonanywhere.com/api/v0/user/${PYTHONANYWHERE_USERNAME}/webapps/${PYTHONANYWHERE_DOMAIN}/reload/" \
+          -H "Authorization: Token ${PYTHONANYWHERE_API_TOKEN}")
+
+        reload_http_code=$(echo "$reload_response" | tail -n1)
+        reload_body=$(echo "$reload_response" | head -n-1)
+
+        echo "Reload response: $reload_body"
+
+        if [ "$reload_http_code" != "200" ]; then
+          echo "Failed to reload web app. HTTP code: $reload_http_code"
+          exit 1
+        fi
+
+        echo "✅ Deployment completed successfully!"

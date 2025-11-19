@@ -1,6 +1,6 @@
 from django.urls import path
 
-from . import auth_views, views, webhook_views
+from . import auth_views, views
 
 urlpatterns = [
     path("", views.TodoListView.as_view(), name="todo_list"),
@@ -20,5 +20,4 @@ urlpatterns = [
     path("register/", auth_views.register_view, name="register"),
     path("login/", auth_views.login_view, name="login"),
     path("logout/", auth_views.logout_view, name="logout"),
-    path("webhook/github/", webhook_views.github_webhook, name="github_webhook"),
 ]

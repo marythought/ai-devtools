@@ -71,7 +71,7 @@ You need to add the following secrets to your GitHub repository:
 
 ## How It Works
 
-The CI/CD pipeline runs in two stages:
+The CI/CD pipeline runs in two stages and is **fully automatic** - no PythonAnywhere configuration needed!
 
 ### 1. Test Stage
 - Runs on every push to the `main` branch that modifies files in `01-todo/`
@@ -80,49 +80,16 @@ The CI/CD pipeline runs in two stages:
 - Runs Django test suite
 - Deployment only proceeds if all tests pass
 
-### 2. Deploy Stage
+### 2. Deploy Stage (Fully Automatic!)
 - Only runs if tests pass
-- Triggers PythonAnywhere to reload the web app
-- **IMPORTANT**: You must set up automatic git pull on PythonAnywhere for this to work
+- Uses PythonAnywhere API to run deployment commands:
+  1. `git pull origin main` - Pull latest code
+  2. `pip install -r requirements.txt` - Update dependencies
+  3. `python manage.py migrate` - Run database migrations
+  4. `python manage.py collectstatic --noinput` - Collect static files
+  5. Reload the web app
 
-### Setting Up Auto-Deploy on PythonAnywhere
-
-To make deployments fully automatic, you need to configure PythonAnywhere to pull code from GitHub automatically:
-
-#### Option 1: GitHub Webhook (Recommended - Fully Automatic)
-
-**This is the best option!** GitHub will automatically notify your app when code is pushed, triggering immediate deployment.
-
-📖 **See [WEBHOOK_SETUP.md](WEBHOOK_SETUP.md) for complete webhook setup instructions.**
-
-Quick summary:
-1. Configure webhook secret in Django settings
-2. Deploy the webhook code to PythonAnywhere
-3. Add webhook in GitHub repository settings
-4. Done! Deployments happen automatically on push to main
-
-#### Option 2: Manual Deployment Process
-
-Currently, the GitHub Actions will:
-1. Run tests automatically
-2. Trigger a reload of your PythonAnywhere app
-
-But you need to **manually pull code** on PythonAnywhere:
-1. Log into PythonAnywhere bash console
-2. Run: `cd ~/ai-devtools/01-todo && git pull origin main`
-3. The GitHub Actions reload will pick up the changes
-
-#### Option 3: Scheduled Task (Recommended for Auto-Deploy)
-
-Set up a scheduled task on PythonAnywhere to pull code every few minutes:
-
-1. Go to PythonAnywhere Dashboard → Tasks
-2. Create a new task that runs every hour (or daily):
-```bash
-cd /home/marythought/ai-devtools/01-todo && git pull origin main && source /home/marythought/.virtualenvs/ai-devtools/bin/activate && pip install -r requirements.txt && python manage.py migrate && python manage.py collectstatic --noinput
-```
-
-This way, your app will automatically pull and deploy changes regularly.
+**That's it!** Every push to main automatically deploys to PythonAnywhere. No manual steps required.
 
 ## Manual Deployment
 
