@@ -4,6 +4,9 @@ on:
   pull_request:
     paths:
       - '01-todo/**'
+  push:
+    branches:
+      - main
 
 defaults:
   run:
