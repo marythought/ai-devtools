@@ -1,0 +1,76 @@
+name: CI for TODO App
+
+on:
+  push:
+    paths:
+      - '01-todo/**'
+  pull_request:
+    paths:
+      - '01-todo/**'
+
+defaults:
+  run:
+    working-directory: 01-todo
+
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.9'
+
+    - name: Install linting tools
+      run: |
+        python -m pip install --upgrade pip
+        pip install black flake8 isort
+
+    - name: Run black
+      run: |
+        black --check .
+
+    - name: Run flake8
+      run: |
+        flake8 .
+
+    - name: Run isort
+      run: |
+        isort --check-only .
+
+  test:
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.9'
+
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r requirements.txt
+        pip install -r requirements-dev.txt
+
+    - name: Run tests with coverage
+      run: |
+        coverage run --source='.' manage.py test
+        coverage xml -i
+      env:
+        DJANGO_SETTINGS_MODULE: todo_project.settings
+        SECRET_KEY: test-secret-key-for-ci
+        DEBUG: 'False'
+        ALLOWED_HOSTS: localhost,127.0.0.1
+
+    - name: Upload coverage to Codecov
+      uses: codecov/codecov-action@v4
+      with:
+        files: coverage.xml
+        # If your repo is private you may need to set CODECOV_TOKEN in GitHub Secrets
+        token: ${{ secrets.CODECOV_TOKEN }}
