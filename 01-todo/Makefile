@@ -48,7 +48,7 @@ run:
 test:
 	@. $(VENV)/bin/activate && python manage.py test
 
-kill:
+stop:
 	@p=$$(lsof -t -i:$(PORT) 2>/dev/null || true); \
 	if [ -n "$$p" ]; then \
 		echo "Killing process(es) on port $(PORT): $$p"; \

@@ -49,6 +49,11 @@
             </div>
         </div>
         <div style="margin-bottom: 20px;">
+            <label for="effort" style="display: block; margin-bottom: 8px; font-weight: 500;">Perceived Effort Level (Spoons) 🥄</label>
+            <input type="number" id="effort" name="effort" value="0" min="0" max="10" style="width: 100px; padding: 10px; border: 1px solid #ddd; border-radius: 4px; font-size: 14px;">
+            <small style="display: block; color: #666; margin-top: 4px;">0 (none) to 10 (maximum effort)</small>
+        </div>
+        <div style="margin-bottom: 20px;">
             <label style="display: block; margin-bottom: 8px; font-weight: 500;">Categories</label>
             {% if categories %}
                 {% for category in categories %}

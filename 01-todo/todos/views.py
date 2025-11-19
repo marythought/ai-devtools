@@ -73,10 +73,25 @@ def create_todo(request):
         due_date = parse_due_date(
             request.POST.get("due_date_date"), request.POST.get("due_date_hour")
         )
+        effort = request.POST.get("effort", 0)
+
+        # Validate and sanitize effort
+        try:
+            effort = int(effort)
+            if effort < 0:
+                effort = 0
+            elif effort > 10:
+                effort = 10
+        except (ValueError, TypeError):
+            effort = 0
 
         if title:
             todo = Todo.objects.create(
-                title=title, description=description, user=request.user, due_date=due_date
+                title=title,
+                description=description,
+                user=request.user,
+                due_date=due_date,
+                effort=effort,
             )
             if category_ids:
                 todo.categories.set(category_ids)
@@ -139,11 +154,23 @@ def edit_todo(request, todo_id):
         due_date = parse_due_date(
             request.POST.get("due_date_date"), request.POST.get("due_date_hour")
         )
+        effort = request.POST.get("effort", 0)
+
+        # Validate and sanitize effort
+        try:
+            effort = int(effort)
+            if effort < 0:
+                effort = 0
+            elif effort > 10:
+                effort = 10
+        except (ValueError, TypeError):
+            effort = 0
 
         if title:
             todo.title = title
             todo.description = description
             todo.due_date = due_date
+            todo.effort = effort
             todo.save()
             todo.categories.set(category_ids)
         return redirect("todo_list")

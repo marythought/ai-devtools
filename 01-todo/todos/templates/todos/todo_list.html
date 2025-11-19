@@ -1,5 +1,5 @@
 {% extends 'todos/base.html' %}
-{% load static %}
+{% load static repeat_tags %}
 
 {% block extra_css %}
 <link rel="stylesheet" href="{% static 'todos/css/todo-list.css' %}">
@@ -72,6 +72,13 @@
                                     <br>Completed: {{ todo.completed_at|date:"M d, Y H:i" %}
                                 {% endif %}
                             </small>
+                            <div class="todo-effort" data-todo-id="{{ todo.id }}">
+                                {% if todo.effort == 0 %}
+                                    <span class="effort-display">😎</span>
+                                {% else %}
+                                    <span class="effort-display">{{ '🥄'|repeat:todo.effort }}</span>
+                                {% endif %}
+                            </div>
                         </div>
                     </div>
                     <div class="todo-actions">

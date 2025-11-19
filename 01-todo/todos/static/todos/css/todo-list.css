@@ -196,3 +196,18 @@
 .btn-secondary {
     background-color: #6c757d;
 }
+
+/* Effort (Spoons) Display */
+.todo-effort {
+    margin-top: 8px;
+}
+
+.effort-display {
+    display: inline-block;
+    background: none;
+    border: 0px;
+    border-radius: 4px;
+    padding: 4px 8px;
+    font-size: 14px;
+    color: inherit;
+}
