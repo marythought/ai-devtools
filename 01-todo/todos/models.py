@@ -28,6 +28,7 @@ class Todo(models.Model):
     )
     categories = models.ManyToManyField(Category, related_name="todos", blank=True)
     order = models.IntegerField(default=0)
+    effort = models.IntegerField(default=0, help_text="Effort level from 0 to 10")
 
     class Meta:
         ordering = [

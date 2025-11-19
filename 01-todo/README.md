@@ -2,6 +2,11 @@
 
 A full-stack TODO application built with Django featuring user authentication, category management and CRUD operations.
 
+[![Coverage Status](https://github.com/marythought/ai-devtools/actions/workflows/coverage.yml/badge.svg?branch=main)](https://github.com/marythought/ai-devtools/actions/workflows/coverage.yml)
+
+[![Codecov](https://codecov.io/gh/marythought/ai-devtools/branch/main/graph/badge.svg)](https://codecov.io/gh/marythought/ai-devtools)
+[![Deploy Status](https://github.com/marythought/ai-devtools/actions/workflows/deploy.yml/badge.svg?branch=main)](https://github.com/marythought/ai-devtools/actions/workflows/deploy.yml)
+
 Deployed via https://marythought.pythonanywhere.com/
 
 **Tech Stack:** Python, Django, SQLite, Pythonanywhere
@@ -32,6 +37,23 @@ http://127.0.0.1:8000/
 Scripts and Makefile
 - Helper scripts are stored in the `scripts/` folder (`scripts/run-local.sh`).
 - Use the top-level `Makefile` in this directory for common tasks: `make venv`, `make install`, `make migrate`, `make collectstatic`, `make createsuperuser`, `make run`, `make test`.
+
+Code Coverage
+- Development dependencies for coverage are listed in `requirements-dev.txt`.
+- Install them into your virtualenv:
+   ```bash
+   . .venv/bin/activate
+   make coverage-install
+   ```
+- Run tests with coverage and show a report:
+   ```bash
+   make coverage
+   ```
+- Generate an HTML coverage report:
+   ```bash
+   make coverage-html
+   # open htmlcov/index.html in your browser
+   ```
 
 ## Deploying
 

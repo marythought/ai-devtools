@@ -1,49 +1,25 @@
-name: Deploy TODO App to PythonAnywhere
+name: Deploy TODO App
 
+# Trigger deployment only when the CI workflow completes successfully.
 on:
-  push:
-    branches:
-      - main
-    paths:
-      - '01-todo/**'
-  workflow_dispatch:  # Allow manual triggering from GitHub UI
+  workflow_run:
+    workflows:
+      - "CI for TODO App"
+    types:
+      - completed
 
 defaults:
   run:
     working-directory: 01-todo
 
 jobs:
-  test:
-    runs-on: ubuntu-latest
-
-    steps:
-    - uses: actions/checkout@v3
-
-    - name: Set up Python
-      uses: actions/setup-python@v4
-      with:
-        python-version: '3.9'
-
-    - name: Install dependencies
-      run: |
-        python -m pip install --upgrade pip
-        pip install -r requirements.txt
-
-    - name: Run tests
-      run: |
-        python manage.py test
-      env:
-        DJANGO_SETTINGS_MODULE: todo_project.settings
-        SECRET_KEY: test-secret-key-for-ci
-        DEBUG: 'False'
-        ALLOWED_HOSTS: localhost,127.0.0.1
-
   deploy:
-    needs: test
+    # Only run this job when the CI workflow completed successfully on the main branch
+    if: ${{ github.event.workflow_run.conclusion == 'success' && github.event.workflow_run.head_branch == 'main' }}
     runs-on: ubuntu-latest
 
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
 
     - name: Deploy to PythonAnywhere
       env:
@@ -53,7 +29,6 @@ jobs:
       run: |
         echo "Starting deployment to PythonAnywhere..."
 
-        # Create a bash console and run deployment commands
         console_response=$(curl -s -w "\n%{http_code}" -X POST \
           "https://www.pythonanywhere.com/api/v0/user/${PYTHONANYWHERE_USERNAME}/consoles/" \
           -H "Authorization: Token ${PYTHONANYWHERE_API_TOKEN}" \
@@ -73,10 +48,8 @@ jobs:
 
         echo "Deployment commands executed successfully"
 
-        # Wait a moment for commands to complete
         sleep 5
 
-        # Reload the web app
         echo "Reloading web app..."
         reload_response=$(curl -s -w "\n%{http_code}" -X POST \
           "https://www.pythonanywhere.com/api/v0/user/${PYTHONANYWHERE_USERNAME}/webapps/${PYTHONANYWHERE_DOMAIN}/reload/" \

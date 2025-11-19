@@ -1,0 +1,16 @@
+[run]
+omit =
+    */migrations/*
+    */staticfiles/*
+    */tests/*
+    */venv/*
+    */.venv/*
+    */node_modules/*
+    */manage.py
+    */todo_project/asgi.py
+    */todo_project/wsgi.py
+
+[report]
+exclude_lines =
+    pragma: no cover
+    if __name__ == .__main__:

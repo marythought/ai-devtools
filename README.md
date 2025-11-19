@@ -5,7 +5,12 @@ This repository contains projects built as part of learning AI-assisted developm
 ## Projects
 
 ### 01-todo - Django TODO Application
-A full-stack TODO application built with Django featuring user authentication and CRUD operations.
+A full-stack TODO application built with Django featuring user authentication, category management and CRUD operations.
+
+[![Coverage Status](https://github.com/marythought/ai-devtools/actions/workflows/coverage.yml/badge.svg?branch=main)](https://github.com/marythought/ai-devtools/actions/workflows/coverage.yml)
+
+[![Codecov](https://codecov.io/gh/marythought/ai-devtools/branch/main/graph/badge.svg)](https://codecov.io/gh/marythought/ai-devtools)
+[![Deploy Status](https://github.com/marythought/ai-devtools/actions/workflows/deploy.yml/badge.svg?branch=main)](https://github.com/marythought/ai-devtools/actions/workflows/deploy.yml)
 
 **Tech Stack:** Python, Django, SQLite
 

@@ -4,6 +4,7 @@ HOST?=127.0.0.1
 PORT?=8000
 
 .PHONY: help venv install setup migrate collectstatic createsuperuser run test
+.PHONY: coverage coverage-html coverage-install coverage-clean
 
 help:
 	@echo "Makefile targets:"
@@ -48,7 +49,7 @@ run:
 test:
 	@. $(VENV)/bin/activate && python manage.py test
 
-kill:
+stop:
 	@p=$$(lsof -t -i:$(PORT) 2>/dev/null || true); \
 	if [ -n "$$p" ]; then \
 		echo "Killing process(es) on port $(PORT): $$p"; \
@@ -60,3 +61,15 @@ kill:
 restart:
 	@$(MAKE) stop PORT=$(PORT)
 	@$(MAKE) run PORT=$(PORT)
+
+coverage-install:
+	@. $(VENV)/bin/activate && pip install --upgrade pip && pip install -r requirements-dev.txt
+
+coverage:
+	@. $(VENV)/bin/activate && coverage run --source='.' manage.py test && coverage report -m
+
+coverage-html:
+	@. $(VENV)/bin/activate && coverage run --source='.' manage.py test && coverage html && echo "Open htmlcov/index.html"
+
+coverage-clean:
+	@rm -rf htmlcov .coverage || true
