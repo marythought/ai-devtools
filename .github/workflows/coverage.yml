@@ -35,9 +35,13 @@ jobs:
       - name: Run tests with coverage
         env:
           DJANGO_SETTINGS_MODULE: todo_project.settings
+          PYTHONPATH: ${{ github.workspace }}/01-todo
         run: |
-          coverage run --source=01-todo -m pytest || coverage run --source=01-todo 01-todo/manage.py test
-          coverage report --fail-under=85
+          cd 01-todo
+          python -m coverage run --source='.' -m pytest || python -m coverage run --source='.' manage.py test
+          python -m coverage report --fail-under=85
+          python -m coverage xml -i
+          python -m coverage html
 
       - name: Upload coverage XML
         if: always()
