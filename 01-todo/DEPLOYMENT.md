@@ -65,7 +65,7 @@ You need to add the following secrets to your GitHub repository:
 The CI/CD pipeline runs in two stages:
 
 ### 1. Test Stage
-- Runs on every push to the `main` branch
+- Runs on every push to the `main` branch that modifies files in `01-todo/`
 - Sets up Python 3.9
 - Installs dependencies from `requirements.txt`
 - Runs Django test suite
@@ -73,13 +73,48 @@ The CI/CD pipeline runs in two stages:
 
 ### 2. Deploy Stage
 - Only runs if tests pass
-- Uses PythonAnywhere API to execute deployment commands
-- Runs the following steps:
-  1. `git pull` - Pull latest code
-  2. `pip install -r requirements.txt` - Update dependencies
-  3. `python manage.py migrate` - Run database migrations
-  4. `python manage.py collectstatic --noinput` - Collect static files
-  5. Touch WSGI file to reload the app
+- Triggers PythonAnywhere to reload the web app
+- **IMPORTANT**: You must set up automatic git pull on PythonAnywhere for this to work
+
+### Setting Up Auto-Deploy on PythonAnywhere
+
+To make deployments fully automatic, you need to configure PythonAnywhere to pull code from GitHub automatically:
+
+#### Option 1: Using a Post-Deploy Hook (Recommended)
+
+1. SSH into your PythonAnywhere bash console
+2. Add the deployment script to run after GitHub notifies:
+
+```bash
+cd ~/ai-devtools/01-todo
+# Make sure the script exists and is executable
+chmod +x bin/deploy_pythonanywhere.sh
+```
+
+3. Set up a webhook endpoint in your Django app (or use the manual approach below)
+
+#### Option 2: Manual Deployment Process
+
+Currently, the GitHub Actions will:
+1. Run tests automatically
+2. Trigger a reload of your PythonAnywhere app
+
+But you need to **manually pull code** on PythonAnywhere:
+1. Log into PythonAnywhere bash console
+2. Run: `cd ~/ai-devtools/01-todo && git pull origin main`
+3. The GitHub Actions reload will pick up the changes
+
+#### Option 3: Scheduled Task (Recommended for Auto-Deploy)
+
+Set up a scheduled task on PythonAnywhere to pull code every few minutes:
+
+1. Go to PythonAnywhere Dashboard → Tasks
+2. Create a new task that runs every hour (or daily):
+```bash
+cd /home/YOURUSERNAME/ai-devtools/01-todo && git pull origin main && source /home/YOURUSERNAME/venv/bin/activate && pip install -r requirements.txt && python manage.py migrate && python manage.py collectstatic --noinput
+```
+
+This way, your app will automatically pull and deploy changes regularly.
 
 ## Manual Deployment
 

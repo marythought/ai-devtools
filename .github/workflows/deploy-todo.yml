@@ -45,13 +45,27 @@ jobs:
     steps:
     - uses: actions/checkout@v3
 
-    - name: Deploy to PythonAnywhere
+    - name: Trigger PythonAnywhere reload
       env:
         PYTHONANYWHERE_USERNAME: ${{ secrets.PYTHONANYWHERE_USERNAME }}
         PYTHONANYWHERE_API_TOKEN: ${{ secrets.PYTHONANYWHERE_API_TOKEN }}
         PYTHONANYWHERE_DOMAIN: ${{ secrets.PYTHONANYWHERE_DOMAIN }}
       run: |
-        curl -X POST \
-          -H "Authorization: Token $PYTHONANYWHERE_API_TOKEN" \
-          -d "command=cd /home/$PYTHONANYWHERE_USERNAME/ai-devtools/01-todo && git pull && source ../venv/bin/activate && pip install -r requirements.txt && python manage.py migrate && python manage.py collectstatic --noinput && touch /var/www/${PYTHONANYWHERE_DOMAIN}_wsgi.py" \
-          "https://www.pythonanywhere.com/api/v0/user/$PYTHONANYWHERE_USERNAME/consoles/"
+        # Reload the web app using PythonAnywhere API
+        response=$(curl -s -w "\n%{http_code}" -X POST \
+          "https://www.pythonanywhere.com/api/v0/user/${PYTHONANYWHERE_USERNAME}/webapps/${PYTHONANYWHERE_DOMAIN}/reload/" \
+          -H "Authorization: Token ${PYTHONANYWHERE_API_TOKEN}")
+
+        http_code=$(echo "$response" | tail -n1)
+        body=$(echo "$response" | head -n-1)
+
+        echo "Response: $body"
+        echo "HTTP Code: $http_code"
+
+        if [ "$http_code" != "200" ]; then
+          echo "Failed to reload web app. HTTP code: $http_code"
+          echo "Response: $body"
+          exit 1
+        fi
+
+        echo "Successfully reloaded ${PYTHONANYWHERE_DOMAIN}"
