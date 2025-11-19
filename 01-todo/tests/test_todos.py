@@ -6,8 +6,10 @@ from todos.models import Category, Todo
 
 
 class TodoModelTests(TestCase):
-    def setUp(self):
-        self.user = User.objects.create_user(username="testuser", password="testpass123")
+    @classmethod
+    def setUpTestData(cls):
+        """Create shared test data that doesn't change between tests."""
+        cls.user = User.objects.create_user(username="testuser", password="testpass123")
 
     def test_todo_creation(self):
         todo = Todo.objects.create(
@@ -37,10 +39,15 @@ class TodoModelTests(TestCase):
 
 
 class TodoListViewTests(TestCase):
+    @classmethod
+    def setUpTestData(cls):
+        """Create shared test data that doesn't change between tests."""
+        cls.user = User.objects.create_user(username="testuser", password="testpass123")
+        cls.other_user = User.objects.create_user(username="otheruser", password="testpass123")
+
     def setUp(self):
+        """Set up test client for each test."""
         self.client = Client()
-        self.user = User.objects.create_user(username="testuser", password="testpass123")
-        self.other_user = User.objects.create_user(username="otheruser", password="testpass123")
 
     def test_redirect_if_not_logged_in(self):
         response = self.client.get(reverse("todo_list"))
@@ -67,9 +74,14 @@ class TodoListViewTests(TestCase):
 
 
 class CreateTodoViewTests(TestCase):
+    @classmethod
+    def setUpTestData(cls):
+        """Create shared test data that doesn't change between tests."""
+        cls.user = User.objects.create_user(username="testuser", password="testpass123")
+
     def setUp(self):
+        """Set up test client for each test."""
         self.client = Client()
-        self.user = User.objects.create_user(username="testuser", password="testpass123")
 
     def test_redirect_if_not_logged_in(self):
         response = self.client.get(reverse("create_todo"))
@@ -94,10 +106,15 @@ class CreateTodoViewTests(TestCase):
 
 
 class EditTodoViewTests(TestCase):
+    @classmethod
+    def setUpTestData(cls):
+        """Create shared test data that doesn't change between tests."""
+        cls.user = User.objects.create_user(username="testuser", password="testpass123")
+        cls.other_user = User.objects.create_user(username="otheruser", password="testpass123")
+
     def setUp(self):
+        """Set up test client for each test."""
         self.client = Client()
-        self.user = User.objects.create_user(username="testuser", password="testpass123")
-        self.other_user = User.objects.create_user(username="otheruser", password="testpass123")
         self.todo = Todo.objects.create(
             title="Original Title", description="Original Description", user=self.user
         )
@@ -131,9 +148,14 @@ class EditTodoViewTests(TestCase):
 
 
 class ToggleTodoViewTests(TestCase):
+    @classmethod
+    def setUpTestData(cls):
+        """Create shared test data that doesn't change between tests."""
+        cls.user = User.objects.create_user(username="testuser", password="testpass123")
+
     def setUp(self):
+        """Set up test client and todo for each test."""
         self.client = Client()
-        self.user = User.objects.create_user(username="testuser", password="testpass123")
         self.todo = Todo.objects.create(title="Test Todo", user=self.user)
 
     def test_redirect_if_not_logged_in(self):
@@ -155,10 +177,15 @@ class ToggleTodoViewTests(TestCase):
 
 
 class DeleteTodoViewTests(TestCase):
+    @classmethod
+    def setUpTestData(cls):
+        """Create shared test data that doesn't change between tests."""
+        cls.user = User.objects.create_user(username="testuser", password="testpass123")
+        cls.other_user = User.objects.create_user(username="otheruser", password="testpass123")
+
     def setUp(self):
+        """Set up test client for each test."""
         self.client = Client()
-        self.user = User.objects.create_user(username="testuser", password="testpass123")
-        self.other_user = User.objects.create_user(username="otheruser", password="testpass123")
         self.todo = Todo.objects.create(title="Test Todo", user=self.user)
 
     def test_redirect_if_not_logged_in(self):
@@ -180,8 +207,10 @@ class DeleteTodoViewTests(TestCase):
 
 
 class CategoryModelTests(TestCase):
-    def setUp(self):
-        self.user = User.objects.create_user(username="testuser", password="testpass123")
+    @classmethod
+    def setUpTestData(cls):
+        """Create shared test data that doesn't change between tests."""
+        cls.user = User.objects.create_user(username="testuser", password="testpass123")
 
     def test_category_creation(self):
         category = Category.objects.create(name="Home Care", user=self.user)
@@ -204,11 +233,16 @@ class CategoryModelTests(TestCase):
 
 
 class TodoCategoryTests(TestCase):
+    @classmethod
+    def setUpTestData(cls):
+        """Create shared test data that doesn't change between tests."""
+        cls.user = User.objects.create_user(username="testuser", password="testpass123")
+        cls.category1 = Category.objects.create(name="Home Care", user=cls.user)
+        cls.category2 = Category.objects.create(name="Job Search", user=cls.user)
+
     def setUp(self):
+        """Set up test client for each test."""
         self.client = Client()
-        self.user = User.objects.create_user(username="testuser", password="testpass123")
-        self.category1 = Category.objects.create(name="Home Care", user=self.user)
-        self.category2 = Category.objects.create(name="Job Search", user=self.user)
 
     def test_create_todo_with_categories(self):
         self.client.login(username="testuser", password="testpass123")
@@ -273,22 +307,27 @@ class TodoCategoryTests(TestCase):
 
 
 class CategoryFilterTests(TestCase):
+    @classmethod
+    def setUpTestData(cls):
+        """Create shared test data that doesn't change between tests."""
+        cls.user = User.objects.create_user(username="testuser", password="testpass123")
+        cls.category1 = Category.objects.create(name="Home Care", user=cls.user)
+        cls.category2 = Category.objects.create(name="Job Search", user=cls.user)
+
+        cls.todo1 = Todo.objects.create(title="Fix sink", user=cls.user)
+        cls.todo1.categories.add(cls.category1)
+
+        cls.todo2 = Todo.objects.create(title="Apply for job", user=cls.user)
+        cls.todo2.categories.add(cls.category2)
+
+        cls.todo3 = Todo.objects.create(title="Both categories", user=cls.user)
+        cls.todo3.categories.add(cls.category1, cls.category2)
+
+        cls.todo4 = Todo.objects.create(title="No category", user=cls.user)
+
     def setUp(self):
+        """Set up test client for each test."""
         self.client = Client()
-        self.user = User.objects.create_user(username="testuser", password="testpass123")
-        self.category1 = Category.objects.create(name="Home Care", user=self.user)
-        self.category2 = Category.objects.create(name="Job Search", user=self.user)
-
-        self.todo1 = Todo.objects.create(title="Fix sink", user=self.user)
-        self.todo1.categories.add(self.category1)
-
-        self.todo2 = Todo.objects.create(title="Apply for job", user=self.user)
-        self.todo2.categories.add(self.category2)
-
-        self.todo3 = Todo.objects.create(title="Both categories", user=self.user)
-        self.todo3.categories.add(self.category1, self.category2)
-
-        self.todo4 = Todo.objects.create(title="No category", user=self.user)
 
     def test_filter_by_category(self):
         self.client.login(username="testuser", password="testpass123")
@@ -322,9 +361,14 @@ class CategoryFilterTests(TestCase):
 
 
 class DueDateTests(TestCase):
+    @classmethod
+    def setUpTestData(cls):
+        """Create shared test data that doesn't change between tests."""
+        cls.user = User.objects.create_user(username="testuser", password="testpass123")
+
     def setUp(self):
+        """Set up test client for each test."""
         self.client = Client()
-        self.user = User.objects.create_user(username="testuser", password="testpass123")
 
     def test_create_todo_with_due_date(self):
         self.client.login(username="testuser", password="testpass123")

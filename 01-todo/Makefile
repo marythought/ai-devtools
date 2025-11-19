@@ -47,7 +47,7 @@ run:
 	@. $(VENV)/bin/activate && python manage.py runserver $(HOST):$(PORT)
 
 test:
-	@. $(VENV)/bin/activate && python manage.py test
+	@. $(VENV)/bin/activate && pytest
 
 stop:
 	@p=$$(lsof -t -i:$(PORT) 2>/dev/null || true); \
@@ -66,10 +66,10 @@ coverage-install:
 	@. $(VENV)/bin/activate && pip install --upgrade pip && pip install -r requirements-dev.txt
 
 coverage:
-	@. $(VENV)/bin/activate && coverage run --source='.' manage.py test && coverage report -m
+	@. $(VENV)/bin/activate && pytest --cov=. --cov-report=term-missing
 
 coverage-html:
-	@. $(VENV)/bin/activate && coverage run --source='.' manage.py test && coverage html && echo "Open htmlcov/index.html"
+	@. $(VENV)/bin/activate && pytest --cov=. --cov-report=html && echo "Open htmlcov/index.html"
 
 coverage-clean:
 	@rm -rf htmlcov .coverage || true

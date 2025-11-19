@@ -24,3 +24,40 @@ skip_glob = ["*/migrations/*"]
 known_django = ["django"]
 known_first_party = ["todos", "todo_project"]
 sections = ["FUTURE", "STDLIB", "DJANGO", "THIRDPARTY", "FIRSTPARTY", "LOCALFOLDER"]
+
+[tool.pytest.ini_options]
+DJANGO_SETTINGS_MODULE = "todo_project.settings"
+python_files = ["tests.py", "test_*.py", "*_tests.py"]
+python_classes = ["Test*"]
+python_functions = ["test_*"]
+testpaths = ["tests"]
+addopts = "--strict-markers -v --tb=short --reuse-db"
+markers = [
+    "unit: Unit tests",
+    "integration: Integration tests",
+    "slow: Slow running tests",
+]
+
+[tool.coverage.run]
+source = ["."]
+omit = [
+    "*/migrations/*",
+    "*/staticfiles/*",
+    "*/venv/*",
+    "*/.venv/*",
+    "*/node_modules/*",
+    "manage.py",
+    "todo_project/asgi.py",
+    "todo_project/wsgi.py",
+]
+
+[tool.coverage.report]
+exclude_lines = [
+    "pragma: no cover",
+    "if __name__ == .__main__:",
+    "def __repr__",
+    "raise AssertionError",
+    "raise NotImplementedError",
+]
+skip_empty = true
+precision = 2
