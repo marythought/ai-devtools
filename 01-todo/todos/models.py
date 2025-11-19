@@ -25,6 +25,7 @@ class Todo(models.Model):
     updated_at = models.DateTimeField(auto_now=True)
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='todos', null=True, blank=True)
     categories = models.ManyToManyField(Category, related_name='todos', blank=True)
+    order = models.IntegerField(default=0)
 
     class Meta:
         ordering = [
@@ -32,6 +33,7 @@ class Todo(models.Model):
                 models.When(completed_at__isnull=True, then=0),
                 default=1,
             ),
+            'order',
             '-created_at'
         ]
 

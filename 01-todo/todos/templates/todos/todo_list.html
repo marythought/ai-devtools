@@ -27,25 +27,32 @@
     </div>
 
     {% if todos %}
-        <div style="display: flex; flex-direction: column; gap: 15px;">
+        <div id="todo-list" style="display: flex; flex-direction: column; gap: 15px;">
             {% for todo in todos %}
-                <div style="border: 1px solid #ddd; padding: 15px; border-radius: 4px; display: flex; justify-content: space-between; align-items: flex-end; {% if todo.is_completed %}background-color: #f8f9fa;{% endif %}">
-                    <div style="flex: 1;">
-                        <h3 style="margin-bottom: 8px; {% if todo.is_completed %}text-decoration: line-through; color: #6c757d;{% endif %}">
-                            {{ todo.title }}
-                        </h3>
-                        {% if todo.description %}
-                            <p style="color: #666; margin-bottom: 8px;">{{ todo.description }}</p>
+                <div class="todo-item" data-id="{{ todo.id }}" data-completed="{{ todo.is_completed|yesno:'true,false' }}" style="border: 1px solid #ddd; padding: 15px; border-radius: 4px; display: flex; justify-content: space-between; align-items: flex-end; {% if todo.is_completed %}background-color: #f8f9fa;{% else %}cursor: move;{% endif %}">
+                    <div style="display: flex; align-items: flex-start; gap: 10px; flex: 1;">
+                        {% if not todo.is_completed %}
+                            <span class="drag-handle" style="color: #999; font-size: 18px; cursor: move; margin-top: 3px;">☰</span>
+                        {% else %}
+                            <span style="color: transparent; font-size: 18px; margin-top: 3px;">☰</span>
                         {% endif %}
-                        <small style="color: #999;">
-                            Created: {{ todo.created_at|date:"M d, Y H:i" }}
-                            {% if todo.due_date %}
-                                <br>Due: {{ todo.due_date|date:"M d, Y" }}{% if todo.due_date.hour > 0 or todo.due_date.minute > 0 %} at {{ todo.due_date|date:"g A" }}{% endif %}
+                        <div style="flex: 1;">
+                            <h3 style="margin-bottom: 8px; {% if todo.is_completed %}text-decoration: line-through; color: #6c757d;{% endif %}">
+                                {{ todo.title }}
+                            </h3>
+                            {% if todo.description %}
+                                <p style="color: #666; margin-bottom: 8px;">{{ todo.description }}</p>
                             {% endif %}
-                            {% if todo.completed_at %}
-                                <br>Completed: {{ todo.completed_at|date:"M d, Y H:i" %}
-                            {% endif %}
-                        </small>
+                            <small style="color: #999;">
+                                Created: {{ todo.created_at|date:"M d, Y H:i" }}
+                                {% if todo.due_date %}
+                                    <br>Due: {{ todo.due_date|date:"M d, Y" }}{% if todo.due_date.hour > 0 or todo.due_date.minute > 0 %} at {{ todo.due_date|date:"g A" }}{% endif %}
+                                {% endif %}
+                                {% if todo.completed_at %}
+                                    <br>Completed: {{ todo.completed_at|date:"M d, Y H:i" %}
+                                {% endif %}
+                            </small>
+                        </div>
                     </div>
                     <div style="display: flex; flex-direction: column; align-items: flex-end; gap: 10px;">
                         <form method="post" action="{% url 'toggle_todo' todo.id %}" style="display: inline;">
@@ -68,4 +75,101 @@
     {% else %}
         <p style="color: #666; text-align: center; padding: 40px 0;">No todos yet. Create your first one!</p>
     {% endif %}
+
+    <script>
+        const todoList = document.getElementById('todo-list');
+        if (todoList) {
+            let draggedElement = null;
+
+            todoList.addEventListener('dragstart', (e) => {
+                const todoItem = e.target.closest('.todo-item');
+                if (todoItem && todoItem.getAttribute('data-completed') === 'false') {
+                    draggedElement = todoItem;
+                    todoItem.style.opacity = '0.5';
+                }
+            });
+
+            todoList.addEventListener('dragend', (e) => {
+                const todoItem = e.target.closest('.todo-item');
+                if (todoItem) {
+                    todoItem.style.opacity = '1';
+                }
+            });
+
+            todoList.addEventListener('dragover', (e) => {
+                e.preventDefault();
+                if (!draggedElement) return;
+
+                const afterElement = getDragAfterElement(todoList, e.clientY);
+
+                // Don't allow dragging incomplete items after completed items
+                if (afterElement && afterElement.getAttribute('data-completed') === 'true') {
+                    return;
+                }
+
+                if (afterElement == null) {
+                    // Check if the last element is completed
+                    const lastElement = todoList.lastElementChild;
+                    if (lastElement && lastElement.getAttribute('data-completed') === 'true') {
+                        return;
+                    }
+                    todoList.appendChild(draggedElement);
+                } else {
+                    todoList.insertBefore(draggedElement, afterElement);
+                }
+            });
+
+            todoList.addEventListener('drop', (e) => {
+                e.preventDefault();
+                saveOrder();
+            });
+
+            function getDragAfterElement(container, y) {
+                const draggableElements = [...container.querySelectorAll('.todo-item:not([style*="opacity: 0.5"])')];
+
+                return draggableElements.reduce((closest, child) => {
+                    const box = child.getBoundingClientRect();
+                    const offset = y - box.top - box.height / 2;
+
+                    if (offset < 0 && offset > closest.offset) {
+                        return { offset: offset, element: child };
+                    } else {
+                        return closest;
+                    }
+                }, { offset: Number.NEGATIVE_INFINITY }).element;
+            }
+
+            function saveOrder() {
+                const items = document.querySelectorAll('.todo-item');
+                const todoIds = Array.from(items).map(item => parseInt(item.getAttribute('data-id')));
+
+                fetch('{% url "reorder_todos" %}', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': '{{ csrf_token }}'
+                    },
+                    body: JSON.stringify({ todo_ids: todoIds })
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.status === 'error') {
+                        alert('Error reordering todos: ' + (data.message || 'Unknown error'));
+                        location.reload();
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    location.reload();
+                });
+            }
+
+            // Make incomplete items draggable
+            document.querySelectorAll('.todo-item').forEach(item => {
+                if (item.getAttribute('data-completed') === 'false') {
+                    item.setAttribute('draggable', 'true');
+                }
+            });
+        }
+    </script>
 {% endblock %}

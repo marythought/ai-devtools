@@ -100,6 +100,41 @@ def delete_todo(request, todo_id):
 
 
 @login_required
+def reorder_todos(request):
+    if request.method == 'POST':
+        import json
+        from django.http import JsonResponse
+        try:
+            data = json.loads(request.body)
+            todo_ids = data.get('todo_ids', [])
+
+            # Get all todos to check completion status
+            todos = {todo.id: todo for todo in Todo.objects.filter(id__in=todo_ids, user=request.user)}
+
+            # Validate that incomplete items aren't being placed after completed items
+            completed_seen = False
+            for todo_id in todo_ids:
+                todo = todos.get(todo_id)
+                if todo:
+                    if todo.is_completed:
+                        completed_seen = True
+                    elif completed_seen:
+                        return JsonResponse({'status': 'error', 'message': 'Cannot place incomplete items after completed items'}, status=400)
+
+            # Update order for all todos
+            for index, todo_id in enumerate(todo_ids):
+                todo = todos.get(todo_id)
+                if todo:
+                    todo.order = index
+                    todo.save()
+
+            return JsonResponse({'status': 'success'})
+        except Exception as e:
+            return JsonResponse({'status': 'error', 'message': str(e)}, status=400)
+    return JsonResponse({'status': 'error'}, status=400)
+
+
+@login_required
 def manage_categories(request):
     if request.method == 'POST':
         name = request.POST.get('name')
