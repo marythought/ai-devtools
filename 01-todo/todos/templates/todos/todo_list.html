@@ -1,39 +1,41 @@
 {% extends 'todos/base.html' %}
+{% load static %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'todos/css/todo-list.css' %}">
+{% endblock %}
 
 {% block title %}TODO List{% endblock %}
 
 {% block content %}
     <h1>My TODO List</h1>
 
-    <div style="margin-bottom: 20px; display: flex; gap: 10px; align-items: center; justify-content: space-between;">
-        <div style="display: flex; gap: 10px;">
+    <div class="todo-header">
+        <div class="todo-header-buttons">
             <a href="{% url 'create_todo' %}" class="btn">Add New TODO</a>
-            <a href="{% url 'manage_categories' %}" class="btn" style="background-color: #6c757d;">Manage Categories</a>
+            <a href="{% url 'manage_categories' %}" class="btn btn-secondary">Manage Categories</a>
         </div>
         {% if view_mode != 'due_soon' %}
-            <div style="display: flex; align-items: center; gap: 10px;">
-                <label style="display: flex; align-items: center; cursor: pointer; user-select: none;">
-                    <input type="checkbox" id="show-completed-toggle" {% if show_completed == 'true' %}checked{% endif %} style="margin-right: 8px; cursor: pointer; width: 18px; height: 18px;">
-                    <span style="font-size: 14px; font-weight: 500;">Show Completed</span>
+            <div class="todo-header-toggle">
+                <label class="toggle-label">
+                    <input type="checkbox" id="show-completed-toggle" {% if show_completed == 'true' %}checked{% endif %} class="toggle-checkbox">
+                    <span class="toggle-text">Show Completed</span>
                 </label>
             </div>
         {% endif %}
     </div>
 
     <!-- Category Tabs -->
-    <div style="margin-bottom: 20px; border-bottom: 2px solid #ddd;">
-        <div style="display: flex; gap: 5px; flex-wrap: wrap;">
-            <a href="?show_completed={{ show_completed }}"
-               style="padding: 10px 20px; text-decoration: none; border: 1px solid #ddd; border-bottom: none; border-radius: 4px 4px 0 0; {% if not selected_category and view_mode == 'default' %}background-color: white; border-bottom: 2px solid white; margin-bottom: -2px; font-weight: bold; color: #007bff;{% else %}background-color: #f8f9fa; color: #666;{% endif %}">
+    <div class="category-tabs-wrapper">
+        <div class="category-tabs">
+            <a href="?show_completed={{ show_completed }}" class="category-tab {% if not selected_category and view_mode == 'default' %}active{% endif %}">
                 All TODOs
             </a>
-            <a href="?view=due_soon"
-               style="padding: 10px 20px; text-decoration: none; border: 1px solid #ddd; border-bottom: none; border-radius: 4px 4px 0 0; {% if view_mode == 'due_soon' %}background-color: white; border-bottom: 2px solid white; margin-bottom: -2px; font-weight: bold; color: #007bff;{% else %}background-color: #f8f9fa; color: #666;{% endif %}">
+            <a href="?view=due_soon" class="category-tab {% if view_mode == 'due_soon' %}active{% endif %}">
                 Due Soon
             </a>
             {% for category in categories %}
-                <a href="?category={{ category.id }}&show_completed={{ show_completed }}"
-                   style="padding: 10px 20px; text-decoration: none; border: 1px solid #ddd; border-bottom: none; border-radius: 4px 4px 0 0; {% if selected_category == category.id|stringformat:'s' %}background-color: white; border-bottom: 2px solid white; margin-bottom: -2px; font-weight: bold; color: #007bff;{% else %}background-color: #f8f9fa; color: #666;{% endif %}">
+                <a href="?category={{ category.id }}&show_completed={{ show_completed }}" class="category-tab {% if selected_category == category.id|stringformat:'s' %}active{% endif %}">
                     {{ category.name }}
                 </a>
             {% endfor %}
@@ -41,23 +43,23 @@
     </div>
 
     {% if todos %}
-        <div id="todo-list" style="display: flex; flex-direction: column; gap: 15px;">
+        <div id="todo-list" class="todo-list-container">
             {% for todo in todos %}
-                <div class="todo-item" data-id="{{ todo.id }}" data-completed="{{ todo.is_completed|yesno:'true,false' }}" style="border: 1px solid #ddd; padding: 15px; border-radius: 4px; display: flex; justify-content: space-between; align-items: flex-end; {% if todo.is_completed %}background-color: #f8f9fa;{% else %}cursor: move;{% endif %}">
-                    <div style="display: flex; align-items: flex-start; gap: 10px; flex: 1;">
+                <div class="todo-item {% if todo.is_completed %}completed{% else %}incomplete{% endif %}" data-id="{{ todo.id }}" data-completed="{{ todo.is_completed|yesno:'true,false' }}">
+                    <div class="todo-content">
                         {% if not todo.is_completed %}
-                            <span class="drag-handle" style="color: #999; font-size: 18px; cursor: move; margin-top: 3px;">☰</span>
+                            <span class="drag-handle">☰</span>
                         {% else %}
-                            <span style="color: transparent; font-size: 18px; margin-top: 3px;">☰</span>
+                            <span class="drag-handle-placeholder">☰</span>
                         {% endif %}
-                        <div style="flex: 1;">
-                            <h3 style="margin-bottom: 8px; {% if todo.is_completed %}text-decoration: line-through; color: #6c757d;{% endif %}">
+                        <div class="todo-details">
+                            <h3 class="todo-title {% if todo.is_completed %}completed{% endif %}">
                                 {{ todo.title }}
                             </h3>
                             {% if todo.description %}
-                                <p style="color: #666; margin-bottom: 8px;">{{ todo.description }}</p>
+                                <p class="todo-description">{{ todo.description }}</p>
                             {% endif %}
-                            <small style="color: #999;">
+                            <small class="todo-metadata">
                                 Created: {{ todo.created_at|date:"M d, Y H:i" }}
                                 {% if todo.due_date %}
                                     <br>Due: {{ todo.due_date|date:"M d, Y" }}{% if todo.due_date.hour > 0 or todo.due_date.minute > 0 %} at {{ todo.due_date|date:"g A" }}{% endif %}
@@ -68,18 +70,18 @@
                             </small>
                         </div>
                     </div>
-                    <div style="display: flex; flex-direction: column; align-items: flex-end; gap: 10px;">
+                    <div class="todo-actions">
                         {% if not todo.is_completed %}
-                            <div style="display: flex; gap: 8px;">
+                            <div class="todo-action-buttons">
                                 <form method="post" action="{% url 'toggle_todo' todo.id %}" style="display: inline;">
                                     {% csrf_token %}
-                                    <button type="submit" class="btn" style="padding: 8px 16px; font-size: 12px; background-color: #28a745; border-color: #28a745;">
+                                    <button type="submit" class="btn todo-action-button success">
                                         Dunzo
                                     </button>
                                 </form>
                                 <form method="post" action="{% url 'complete_and_followup' todo.id %}" style="display: inline;">
                                     {% csrf_token %}
-                                    <button type="submit" class="btn" style="padding: 8px 16px; font-size: 12px;">
+                                    <button type="submit" class="btn todo-action-button">
                                         ✅ & Followup
                                     </button>
                                 </form>
@@ -87,16 +89,16 @@
                         {% else %}
                             <form method="post" action="{% url 'toggle_todo' todo.id %}" style="display: inline;">
                                 {% csrf_token %}
-                                <button type="submit" class="btn btn-success" style="padding: 8px 16px; font-size: 12px;">
+                                <button type="submit" class="btn btn-success todo-action-button">
                                     Mark Incomplete
                                 </button>
                             </form>
                         {% endif %}
-                        <div style="display: flex; gap: 10px; font-size: 12px;">
-                            <a href="{% url 'edit_todo' todo.id %}" style="color: #dc3545; text-decoration: none;">Edit</a>
+                        <div class="todo-links">
+                            <a href="{% url 'edit_todo' todo.id %}" class="todo-link">Edit</a>
                             <form method="post" action="{% url 'delete_todo' todo.id %}" style="display: inline; margin: 0;">
                                 {% csrf_token %}
-                                <button type="submit" style="background: none; border: none; color: #dc3545; text-decoration: none; font-size: 12px; cursor: pointer; padding: 0; font-family: inherit;" onclick="return confirm('Are you sure you want to delete this TODO?');">Delete</button>
+                                <button type="submit" class="todo-delete-button" onclick="return confirm('Are you sure you want to delete this TODO?');">Delete</button>
                             </form>
                         </div>
                     </div>
@@ -104,7 +106,7 @@
             {% endfor %}
         </div>
     {% else %}
-        <p style="color: #666; text-align: center; padding: 40px 0;">No todos yet. Create your first one!</p>
+        <p class="empty-state">No todos yet. Create your first one!</p>
     {% endif %}
 
     <script>

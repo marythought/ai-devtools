@@ -69,27 +69,7 @@ You need to add the following secrets to your GitHub repository:
 | `PYTHONANYWHERE_API_TOKEN` | Your PythonAnywhere API token | `abc123def456...` |
 | `PYTHONANYWHERE_DOMAIN` | Your PythonAnywhere domain | `yourusername.pythonanywhere.com` |
 
-## How It Works
 
-The CI/CD pipeline runs in two stages and is **fully automatic** - no PythonAnywhere configuration needed!
-
-### 1. Test Stage
-- Runs on every push to the `main` branch that modifies files in `01-todo/`
-- Sets up Python 3.9
-- Installs dependencies from `requirements.txt`
-- Runs Django test suite
-- Deployment only proceeds if all tests pass
-
-### 2. Deploy Stage (Fully Automatic!)
-- Only runs if tests pass
-- Uses PythonAnywhere API to run deployment commands:
-  1. `git pull origin main` - Pull latest code
-  2. `pip install -r requirements.txt` - Update dependencies
-  3. `python manage.py migrate` - Run database migrations
-  4. `python manage.py collectstatic --noinput` - Collect static files
-  5. Reload the web app
-
-**That's it!** Every push to main automatically deploys to PythonAnywhere. No manual steps required.
 
 ## Manual Deployment
 

@@ -33,6 +33,25 @@ Scripts and Makefile
 - Helper scripts are stored in the `scripts/` folder (`scripts/run-local.sh`).
 - Use the top-level `Makefile` in this directory for common tasks: `make venv`, `make install`, `make migrate`, `make collectstatic`, `make createsuperuser`, `make run`, `make test`.
 
+## Deploying
+
+The CI/CD pipeline runs in two stages and is fully automatic to PythonAnywhere.
+
+### 1. Test Stage
+- Runs on every push to the `main` branch that modifies files in `01-todo/`
+- Sets up Python 3.9
+- Installs dependencies from `requirements.txt`
+- Runs Django test suite
+- Deployment only proceeds if all tests pass
+
+### 2. Deploy Stage
+- Only runs if tests pass
+- Uses PythonAnywhere API to run deployment commands:
+  1. `git pull origin main` - Pull latest code
+  2. `pip install -r requirements.txt` - Update dependencies
+  3. `python manage.py migrate` - Run database migrations
+  4. `python manage.py collectstatic --noinput` - Collect static files
+  5. Reload the web app
 
 ## Prerequisites
 
