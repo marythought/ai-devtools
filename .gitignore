@@ -50,3 +50,4 @@ staticfiles/
 htmlcov/
 .pytest_cache/
 .tox/
+coverage.xml
