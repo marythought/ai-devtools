@@ -12,14 +12,22 @@ class TodoListView(LoginRequiredMixin, ListView):
 
     def get_queryset(self):
         queryset = Todo.objects.filter(user=self.request.user)
-        category_id = self.request.GET.get('category')
-        if category_id:
-            queryset = queryset.filter(categories__id=category_id)
 
-        # Filter by completion status
-        show_completed = self.request.GET.get('show_completed', 'true')
-        if show_completed == 'false':
-            queryset = queryset.filter(completed_at__isnull=True)
+        # Check if viewing "Due Soon" tab
+        view_mode = self.request.GET.get('view')
+        if view_mode == 'due_soon':
+            # Show only incomplete todos with due dates, ordered by due date ascending
+            queryset = queryset.filter(completed_at__isnull=True, due_date__isnull=False).order_by('due_date')
+        else:
+            # Normal category filtering
+            category_id = self.request.GET.get('category')
+            if category_id:
+                queryset = queryset.filter(categories__id=category_id)
+
+            # Filter by completion status
+            show_completed = self.request.GET.get('show_completed', 'true')
+            if show_completed == 'false':
+                queryset = queryset.filter(completed_at__isnull=True)
 
         return queryset
 
@@ -28,6 +36,7 @@ class TodoListView(LoginRequiredMixin, ListView):
         context['categories'] = Category.objects.filter(user=self.request.user)
         context['selected_category'] = self.request.GET.get('category')
         context['show_completed'] = self.request.GET.get('show_completed', 'true')
+        context['view_mode'] = self.request.GET.get('view', 'default')
         return context
 
 

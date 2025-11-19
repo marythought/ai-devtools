@@ -10,20 +10,26 @@
             <a href="{% url 'create_todo' %}" class="btn">Add New TODO</a>
             <a href="{% url 'manage_categories' %}" class="btn" style="background-color: #6c757d;">Manage Categories</a>
         </div>
-        <div style="display: flex; align-items: center; gap: 10px;">
-            <label style="display: flex; align-items: center; cursor: pointer; user-select: none;">
-                <input type="checkbox" id="show-completed-toggle" {% if show_completed == 'true' %}checked{% endif %} style="margin-right: 8px; cursor: pointer; width: 18px; height: 18px;">
-                <span style="font-size: 14px; font-weight: 500;">Show Completed</span>
-            </label>
-        </div>
+        {% if view_mode != 'due_soon' %}
+            <div style="display: flex; align-items: center; gap: 10px;">
+                <label style="display: flex; align-items: center; cursor: pointer; user-select: none;">
+                    <input type="checkbox" id="show-completed-toggle" {% if show_completed == 'true' %}checked{% endif %} style="margin-right: 8px; cursor: pointer; width: 18px; height: 18px;">
+                    <span style="font-size: 14px; font-weight: 500;">Show Completed</span>
+                </label>
+            </div>
+        {% endif %}
     </div>
 
     <!-- Category Tabs -->
     <div style="margin-bottom: 20px; border-bottom: 2px solid #ddd;">
         <div style="display: flex; gap: 5px; flex-wrap: wrap;">
             <a href="?show_completed={{ show_completed }}"
-               style="padding: 10px 20px; text-decoration: none; border: 1px solid #ddd; border-bottom: none; border-radius: 4px 4px 0 0; {% if not selected_category %}background-color: white; border-bottom: 2px solid white; margin-bottom: -2px; font-weight: bold; color: #007bff;{% else %}background-color: #f8f9fa; color: #666;{% endif %}">
+               style="padding: 10px 20px; text-decoration: none; border: 1px solid #ddd; border-bottom: none; border-radius: 4px 4px 0 0; {% if not selected_category and view_mode == 'default' %}background-color: white; border-bottom: 2px solid white; margin-bottom: -2px; font-weight: bold; color: #007bff;{% else %}background-color: #f8f9fa; color: #666;{% endif %}">
                 All TODOs
+            </a>
+            <a href="?view=due_soon"
+               style="padding: 10px 20px; text-decoration: none; border: 1px solid #ddd; border-bottom: none; border-radius: 4px 4px 0 0; {% if view_mode == 'due_soon' %}background-color: white; border-bottom: 2px solid white; margin-bottom: -2px; font-weight: bold; color: #007bff;{% else %}background-color: #f8f9fa; color: #666;{% endif %}">
+                Due Soon
             </a>
             {% for category in categories %}
                 <a href="?category={{ category.id }}&show_completed={{ show_completed }}"
