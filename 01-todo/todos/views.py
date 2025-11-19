@@ -40,8 +40,15 @@ class TodoListView(LoginRequiredMixin, ListView):
             if category_id:
                 queryset = queryset.filter(categories__id=category_id)
 
-            # Filter by completion status
-            show_completed = self.request.GET.get("show_completed", "true")
+            # Filter by completion status - save preference in session
+            show_completed = self.request.GET.get("show_completed")
+            if show_completed is not None:
+                # User explicitly changed the setting, save to session
+                self.request.session["show_completed"] = show_completed
+            else:
+                # Use session value, default to "true" if not set
+                show_completed = self.request.session.get("show_completed", "true")
+
             if show_completed == "false":
                 queryset = queryset.filter(completed_at__isnull=True)
 
@@ -51,7 +58,8 @@ class TodoListView(LoginRequiredMixin, ListView):
         context = super().get_context_data(**kwargs)
         context["categories"] = Category.objects.filter(user=self.request.user)
         context["selected_category"] = self.request.GET.get("category")
-        context["show_completed"] = self.request.GET.get("show_completed", "true")
+        # Get show_completed from session, default to "true"
+        context["show_completed"] = self.request.session.get("show_completed", "true")
         context["view_mode"] = self.request.GET.get("view", "default")
         return context
 
