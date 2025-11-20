@@ -2,7 +2,7 @@
 
 A full-stack TODO application built with Django featuring user authentication, category management and CRUD operations.
 
-[![Coverage Status](https://github.com/marythought/ai-devtools/actions/workflows/coverage.yml/badge.svg?branch=main)](https://github.com/marythought/ai-devtools/actions/workflows/coverage.yml)
+[![CI Status](https://github.com/marythought/ai-devtools/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/marythought/ai-devtools/actions/workflows/ci.yml)
 
 [![Codecov](https://codecov.io/gh/marythought/ai-devtools/branch/main/graph/badge.svg)](https://codecov.io/gh/marythought/ai-devtools)
 
