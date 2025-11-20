@@ -16,8 +16,12 @@
 
     <div class="todo-header">
         <div class="todo-header-buttons">
+            {% if perms.auth.can_modify_todos %}
             <a href="{% url 'create_todo' %}" class="btn">Add New TODO</a>
             <a href="{% url 'manage_categories' %}" class="btn btn-secondary">Manage Categories</a>
+            {% else %}
+            <span class="demo-notice" style="color: #666; font-style: italic;">Demo Mode - Read Only</span>
+            {% endif %}
         </div>
         {% if view_mode != 'due_soon' %}
             <div class="todo-header-toggle">
@@ -47,7 +51,7 @@
     </div>
 
     {% if todos %}
-        <div id="todo-list" class="todo-list-container" data-reorder-url="{% url 'reorder_todos' %}" data-csrf-token="{{ csrf_token }}">
+        <div id="todo-list" class="todo-list-container" data-reorder-url="{% url 'reorder_todos' %}" data-csrf-token="{{ csrf_token }}" data-can-modify="{% if perms.auth.can_modify_todos %}true{% else %}false{% endif %}">
             {% for todo in todos %}
                 <div class="todo-item {% if todo.is_completed %}completed{% else %}incomplete{% endif %}" data-id="{{ todo.id }}" data-completed="{{ todo.is_completed|yesno:'true,false' }}">
                     <div class="todo-content">
@@ -82,36 +86,38 @@
                         </div>
                     </div>
                     <div class="todo-actions">
-                        {% if not todo.is_completed %}
-                            <div class="todo-action-buttons">
+                        {% if perms.auth.can_modify_todos %}
+                            {% if not todo.is_completed %}
+                                <div class="todo-action-buttons">
+                                    <form method="post" action="{% url 'toggle_todo' todo.id %}" style="display: inline;">
+                                        {% csrf_token %}
+                                        <button type="submit" class="btn todo-action-button success">
+                                            Dunzo
+                                        </button>
+                                    </form>
+                                    <form method="post" action="{% url 'complete_and_followup' todo.id %}" style="display: inline;">
+                                        {% csrf_token %}
+                                        <button type="submit" class="btn todo-action-button">
+                                            ✅ & Followup
+                                        </button>
+                                    </form>
+                                </div>
+                            {% else %}
                                 <form method="post" action="{% url 'toggle_todo' todo.id %}" style="display: inline;">
                                     {% csrf_token %}
-                                    <button type="submit" class="btn todo-action-button success">
-                                        Dunzo
+                                    <button type="submit" class="btn btn-success todo-action-button">
+                                        Mark Incomplete
                                     </button>
                                 </form>
-                                <form method="post" action="{% url 'complete_and_followup' todo.id %}" style="display: inline;">
+                            {% endif %}
+                            <div class="todo-links">
+                                <a href="{% url 'edit_todo' todo.id %}" class="todo-link">Edit</a>
+                                <form method="post" action="{% url 'delete_todo' todo.id %}" style="display: inline; margin: 0;">
                                     {% csrf_token %}
-                                    <button type="submit" class="btn todo-action-button">
-                                        ✅ & Followup
-                                    </button>
+                                    <button type="submit" class="todo-delete-button delete-todo-btn">Delete</button>
                                 </form>
                             </div>
-                        {% else %}
-                            <form method="post" action="{% url 'toggle_todo' todo.id %}" style="display: inline;">
-                                {% csrf_token %}
-                                <button type="submit" class="btn btn-success todo-action-button">
-                                    Mark Incomplete
-                                </button>
-                            </form>
                         {% endif %}
-                        <div class="todo-links">
-                            <a href="{% url 'edit_todo' todo.id %}" class="todo-link">Edit</a>
-                            <form method="post" action="{% url 'delete_todo' todo.id %}" style="display: inline; margin: 0;">
-                                {% csrf_token %}
-                                <button type="submit" class="todo-delete-button delete-todo-btn">Delete</button>
-                            </form>
-                        </div>
                     </div>
                 </div>
             {% endfor %}

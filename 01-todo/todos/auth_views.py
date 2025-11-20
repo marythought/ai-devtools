@@ -1,6 +1,7 @@
 from django.contrib import messages
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.forms import AuthenticationForm, UserCreationForm
+from django.contrib.auth.models import User
 from django.shortcuts import redirect, render
 
 
@@ -41,3 +42,25 @@ def logout_view(request):
     logout(request)
     messages.info(request, "You have been logged out.")
     return redirect("login")
+
+
+def demo_login(request):
+    """
+    Log in the demo user automatically.
+    The demo user has read-only access (no can_modify_todos permission).
+    """
+    try:
+        demo_user = User.objects.get(username="demo-mode")
+        login(request, demo_user, backend="django.contrib.auth.backends.ModelBackend")
+        messages.info(
+            request,
+            "Welcome to Demo Mode! You have read-only access. "
+            "You can view all features but cannot create, edit, or delete items.",
+        )
+        return redirect("todo_list")
+    except User.DoesNotExist:
+        messages.error(
+            request,
+            "Demo mode is not available. Please contact the administrator.",
+        )
+        return redirect("login")
