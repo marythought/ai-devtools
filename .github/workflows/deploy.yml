@@ -23,63 +23,52 @@ jobs:
     steps:
     - uses: actions/checkout@v4
 
-    - name: Deploy to PythonAnywhere
+    - name: Setup SSH
+      env:
+        SSH_PRIVATE_KEY: ${{ secrets.PYTHONANYWHERE_SSH_KEY }}
+      run: |
+        mkdir -p ~/.ssh
+        echo "$SSH_PRIVATE_KEY" > ~/.ssh/pythonanywhere_key
+        chmod 600 ~/.ssh/pythonanywhere_key
+        ssh-keyscan ssh.pythonanywhere.com >> ~/.ssh/known_hosts
+
+    - name: Deploy to PythonAnywhere via SSH
       env:
         PYTHONANYWHERE_USERNAME: ${{ secrets.PYTHONANYWHERE_USERNAME }}
-        PYTHONANYWHERE_API_TOKEN: ${{ secrets.PYTHONANYWHERE_API_TOKEN }}
         PYTHONANYWHERE_DOMAIN: ${{ secrets.PYTHONANYWHERE_DOMAIN }}
       run: |
         echo "Starting deployment to PythonAnywhere..."
 
-        # Create and run console with deployment commands
-        console_response=$(curl -s -w "\n%{http_code}" -X POST \
-          "https://www.pythonanywhere.com/api/v0/user/${PYTHONANYWHERE_USERNAME}/consoles/" \
-          -H "Authorization: Token ${PYTHONANYWHERE_API_TOKEN}" \
-          -d "executable=bash" \
-          -d "arguments=-c" \
-          -d "arguments=cd /home/${PYTHONANYWHERE_USERNAME}/ai-devtools/01-todo && git pull origin main && source /home/${PYTHONANYWHERE_USERNAME}/.virtualenvs/ai-devtools/bin/activate && pip install -r requirements.txt && python manage.py migrate && python manage.py collectstatic --noinput && python manage.py create_demo_user --with-sample-data")
+        ssh -i ~/.ssh/pythonanywhere_key \
+          -o StrictHostKeyChecking=no \
+          ${PYTHONANYWHERE_USERNAME}@ssh.pythonanywhere.com \
+          'bash -s' << 'ENDSSH'
+          set -e
 
-        console_http_code=$(echo "$console_response" | tail -n1)
-        console_body=$(echo "$console_response" | head -n-1)
+          echo "Pulling latest code..."
+          cd ~/ai-devtools/01-todo
+          git pull origin main
 
-        echo "Console API response: $console_body"
+          echo "Activating virtual environment..."
+          source ~/.virtualenvs/ai-devtools/bin/activate
 
-        # Extract console ID from response for cleanup
-        console_id=$(echo "$console_body" | grep -o '"id":[0-9]*' | head -1 | cut -d':' -f2)
+          echo "Installing dependencies..."
+          pip install -r requirements.txt
 
-        if [ "$console_http_code" != "200" ] && [ "$console_http_code" != "201" ]; then
-          echo "Failed to run deployment commands. HTTP code: $console_http_code"
-          echo "This might be due to console limit. Check PythonAnywhere console limit."
-          exit 1
-        fi
+          echo "Running migrations..."
+          python manage.py migrate
 
-        echo "Deployment commands executed successfully"
+          echo "Collecting static files..."
+          python manage.py collectstatic --noinput
 
-        # Wait for commands to complete
-        sleep 5
+          echo "Setting up demo user..."
+          python manage.py create_demo_user --with-sample-data
 
-        # Clean up console to avoid hitting console limit
-        if [ -n "$console_id" ]; then
-          echo "Cleaning up console ${console_id}..."
-          curl -s -X DELETE \
-            "https://www.pythonanywhere.com/api/v0/user/${PYTHONANYWHERE_USERNAME}/consoles/${console_id}/" \
-            -H "Authorization: Token ${PYTHONANYWHERE_API_TOKEN}"
-          echo "Console cleaned up"
-        fi
+          echo "Reloading web app..."
+          touch /var/www/${PYTHONANYWHERE_DOMAIN}_wsgi.py
 
-        echo "Reloading web app..."
-        reload_response=$(curl -s -w "\n%{http_code}" -X POST \
-          "https://www.pythonanywhere.com/api/v0/user/${PYTHONANYWHERE_USERNAME}/webapps/${PYTHONANYWHERE_DOMAIN}/reload/" \
-          -H "Authorization: Token ${PYTHONANYWHERE_API_TOKEN}")
+          echo "✅ Deployment completed successfully!"
+        ENDSSH
 
-        reload_http_code=$(echo "$reload_response" | tail -n1)
-        reload_body=$(echo "$reload_response" | head -n-1)
-
-        echo "Reload response: $reload_body"
-
-        if [ "$reload_http_code" != "200" ]; then
-          echo "Failed to reload web app. HTTP code: $reload_http_code"
-          exit 1
-        fi
-
-        echo "✅ Deployment completed successfully!"
+        echo ""
+        echo "Deployment complete! Check your app at: https://${PYTHONANYWHERE_DOMAIN}"
