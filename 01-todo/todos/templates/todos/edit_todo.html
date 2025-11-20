@@ -5,6 +5,12 @@
 {% block content %}
     <h1>Edit TODO</h1>
 
+    {% if not perms.auth.can_modify_todos %}
+        <div style="padding: 15px; background-color: #fff3cd; border: 1px solid #ffc107; border-radius: 4px; margin-top: 20px;">
+            <p style="margin: 0; color: #856404;"><strong>Demo Mode:</strong> You cannot edit todos. You can mark them complete/incomplete and reorder them from the main list.</p>
+            <a href="{% url 'todo_list' %}" class="btn" style="margin-top: 10px; display: inline-block;">Back to Todo List</a>
+        </div>
+    {% else %}
     <form method="post" style="margin-top: 20px;">
         {% csrf_token %}
         <div style="margin-bottom: 20px;">
@@ -75,4 +81,5 @@
             <a href="{% url 'todo_list' %}" class="btn" style="background-color: #6c757d;">Cancel</a>
         </div>
     </form>
+    {% endif %}
 {% endblock %}

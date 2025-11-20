@@ -35,6 +35,13 @@
     <button type="submit" class="btn">Login</button>
 </form>
 
+<div style="margin-top: 20px; padding: 15px; background-color: #f8f9fa; border: 1px solid #dee2e6; border-radius: 4px;">
+    <p style="margin: 0 0 10px 0; font-weight: 500;">Want to try it out first?</p>
+    <a href="{% url 'demo_login' %}" class="btn" style="background-color: #6c757d; display: inline-block;">
+        Try Demo Mode (Read Only)
+    </a>
+</div>
+
 <p style="margin-top: 20px;">
     Don't have an account? <a href="{% url 'register' %}" style="color: #007bff;">Register here</a>
 </p>

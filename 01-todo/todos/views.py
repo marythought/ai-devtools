@@ -1,13 +1,28 @@
 from datetime import datetime
+from functools import wraps
 
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.mixins import LoginRequiredMixin
+from django.core.exceptions import PermissionDenied
 from django.http import JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.utils import timezone
 from django.views.generic import ListView
 
 from .models import Category, Todo
+from .permissions import user_can_modify_todos
+
+
+def permission_required_to_modify(view_func):
+    """Decorator to check if user has permission to modify todos/categories."""
+
+    @wraps(view_func)
+    def wrapper(request, *args, **kwargs):
+        if not user_can_modify_todos(request.user):
+            raise PermissionDenied("You do not have permission to modify todos or categories.")
+        return view_func(request, *args, **kwargs)
+
+    return wrapper
 
 
 def parse_due_date(due_date_date, due_date_hour):
@@ -67,6 +82,10 @@ class TodoListView(LoginRequiredMixin, ListView):
 @login_required
 def create_todo(request):
     if request.method == "POST":
+        # Check permission for POST requests (actual creation)
+        if not user_can_modify_todos(request.user):
+            raise PermissionDenied("You do not have permission to modify todos or categories.")
+
         title = request.POST.get("title")
         description = request.POST.get("description", "")
         category_ids = request.POST.getlist("categories")
@@ -123,6 +142,7 @@ def toggle_todo(request, todo_id):
 
 
 @login_required
+@permission_required_to_modify
 def complete_and_followup(request, todo_id):
     todo = get_object_or_404(Todo, id=todo_id, user=request.user)
 
@@ -148,6 +168,10 @@ def complete_and_followup(request, todo_id):
 def edit_todo(request, todo_id):
     todo = get_object_or_404(Todo, id=todo_id, user=request.user)
     if request.method == "POST":
+        # Check permission for POST requests (actual editing)
+        if not user_can_modify_todos(request.user):
+            raise PermissionDenied("You do not have permission to modify todos or categories.")
+
         title = request.POST.get("title")
         description = request.POST.get("description", "")
         category_ids = request.POST.getlist("categories")
@@ -179,6 +203,7 @@ def edit_todo(request, todo_id):
 
 
 @login_required
+@permission_required_to_modify
 def delete_todo(request, todo_id):
     todo = get_object_or_404(Todo, id=todo_id, user=request.user)
     if request.method == "POST":
@@ -251,6 +276,10 @@ def reorder_todos(request):
 @login_required
 def manage_categories(request):
     if request.method == "POST":
+        # Check permission for POST requests (actual creation)
+        if not user_can_modify_todos(request.user):
+            raise PermissionDenied("You do not have permission to modify todos or categories.")
+
         name = request.POST.get("name")
         if name:
             Category.objects.create(name=name, user=request.user)
@@ -260,6 +289,7 @@ def manage_categories(request):
 
 
 @login_required
+@permission_required_to_modify
 def delete_category(request, category_id):
     category = get_object_or_404(Category, id=category_id, user=request.user)
     if request.method == "POST":

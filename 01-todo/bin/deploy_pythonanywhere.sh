@@ -29,6 +29,10 @@ python manage.py migrate
 echo "Collecting static files..."
 python manage.py collectstatic --noinput
 
+# Create/update demo user
+echo "Setting up demo user..."
+python manage.py create_demo_user --with-sample-data
+
 # Reload web app
 echo "Reloading web app..."
 # Touch the WSGI file to reload the app
