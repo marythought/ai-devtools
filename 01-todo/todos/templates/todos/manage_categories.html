@@ -1,39 +1,40 @@
 {% extends 'todos/base.html' %}
 {% load static %}
+{% load i18n %}
 
 {% block extra_js %}
 <script src="{% static 'todos/js/manage-categories.js' %}"></script>
 {% endblock %}
 
-{% block title %}Manage Categories{% endblock %}
+{% block title %}{% trans "Manage Categories" %}{% endblock %}
 
 {% block content %}
-    <h1>Manage Categories</h1>
+    <h1>{% trans "Manage Categories" %}</h1>
 
     <div style="margin-bottom: 20px;">
-        <a href="{% url 'todo_list' %}" class="btn" style="background-color: #6c757d;">Back to TODOs</a>
+        <a href="{% url 'todo_list' %}" class="btn" style="background-color: #6c757d;">{% trans "Back to TODOs" %}</a>
     </div>
 
     {% if perms.auth.can_modify_todos %}
-    <h2>Add New Category</h2>
+    <h2>{% trans "Add New Category" %}</h2>
     <form method="post" style="margin-top: 20px; margin-bottom: 40px;">
         {% csrf_token %}
         <div style="display: flex; gap: 10px; align-items: flex-end;">
             <div style="flex: 1;">
-                <label for="name" style="display: block; margin-bottom: 8px; font-weight: 500;">Category Name *</label>
+                <label for="name" style="display: block; margin-bottom: 8px; font-weight: 500;">{% trans "Category Name" %} *</label>
                 <input type="text" id="name" name="name" required style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 4px; font-size: 14px;">
             </div>
-            <button type="submit" class="btn">Add Category</button>
+            <button type="submit" class="btn">{% trans "Add Category" %}</button>
         </div>
     </form>
     {% else %}
         <div style="padding: 15px; background-color: #fff3cd; border: 1px solid #ffc107; border-radius: 4px; margin-bottom: 20px;">
-            <p style="margin: 0; color: #856404;"><strong>Demo Mode:</strong> You cannot create or delete categories, but you can reorder them below.</p>
+            <p style="margin: 0; color: #856404;"><strong>{% trans "Demo Mode:" %}</strong> {% trans "You cannot create or delete categories, but you can reorder them below." %}</p>
         </div>
     {% endif %}
 
-    <h2>Your Categories</h2>
-    <p style="color: #666; font-size: 14px; margin-top: 10px;">Drag and drop to reorder</p>
+    <h2>{% trans "Your Categories" %}</h2>
+    <p style="color: #666; font-size: 14px; margin-top: 10px;">{% trans "Drag and drop to reorder" %}</p>
     {% if categories %}
         <div id="category-list" style="display: flex; flex-direction: column; gap: 10px; margin-top: 20px;" data-reorder-url="{% url 'reorder_categories' %}" data-csrf-token="{{ csrf_token }}">
             {% for category in categories %}
@@ -43,14 +44,14 @@
                         <div>
                             <strong>{{ category.name }}</strong>
                             <br>
-                            <small style="color: #999;">Created: {{ category.created_at|date:"M d, Y" }}</small>
+                            <small style="color: #999;">{% trans "Created:" %} {{ category.created_at|date:"M d, Y" }}</small>
                         </div>
                     </div>
                     {% if perms.auth.can_modify_todos %}
                     <form method="post" action="{% url 'delete_category' category.id %}" style="display: inline;">
                         {% csrf_token %}
                         <button type="submit" class="btn btn-danger delete-category-btn" style="padding: 8px 16px; font-size: 12px;">
-                            Delete
+                            {% trans "Delete" %}
                         </button>
                     </form>
                     {% endif %}
@@ -58,6 +59,6 @@
             {% endfor %}
         </div>
     {% else %}
-        <p style="color: #666; margin-top: 20px;">No categories yet. Create your first one above!</p>
+        <p style="color: #666; margin-top: 20px;">{% trans "No categories yet. Create your first one above!" %}</p>
     {% endif %}
 {% endblock %}

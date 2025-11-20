@@ -7,6 +7,7 @@ from django.core.exceptions import PermissionDenied
 from django.http import JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.utils import timezone
+from django.utils.translation import gettext_lazy as _
 from django.views.generic import ListView
 
 from .models import Category, Todo
@@ -19,7 +20,7 @@ def permission_required_to_modify(view_func):
     @wraps(view_func)
     def wrapper(request, *args, **kwargs):
         if not user_can_modify_todos(request.user):
-            raise PermissionDenied("You do not have permission to modify todos or categories.")
+            raise PermissionDenied(_("You do not have permission to modify todos or categories."))
         return view_func(request, *args, **kwargs)
 
     return wrapper
@@ -84,7 +85,7 @@ def create_todo(request):
     if request.method == "POST":
         # Check permission for POST requests (actual creation)
         if not user_can_modify_todos(request.user):
-            raise PermissionDenied("You do not have permission to modify todos or categories.")
+            raise PermissionDenied(_("You do not have permission to modify todos or categories."))
 
         title = request.POST.get("title")
         description = request.POST.get("description", "")
@@ -170,7 +171,7 @@ def edit_todo(request, todo_id):
     if request.method == "POST":
         # Check permission for POST requests (actual editing)
         if not user_can_modify_todos(request.user):
-            raise PermissionDenied("You do not have permission to modify todos or categories.")
+            raise PermissionDenied(_("You do not have permission to modify todos or categories."))
 
         title = request.POST.get("title")
         description = request.POST.get("description", "")
@@ -255,7 +256,7 @@ def reorder_todos(request):
                         return JsonResponse(
                             {
                                 "status": "error",
-                                "message": "Cannot place incomplete items after completed items",
+                                "message": _("Cannot place incomplete items after completed items"),
                             },
                             status=400,
                         )
@@ -278,7 +279,7 @@ def manage_categories(request):
     if request.method == "POST":
         # Check permission for POST requests (actual creation)
         if not user_can_modify_todos(request.user):
-            raise PermissionDenied("You do not have permission to modify todos or categories.")
+            raise PermissionDenied(_("You do not have permission to modify todos or categories."))
 
         name = request.POST.get("name")
         if name:

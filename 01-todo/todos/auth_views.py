@@ -3,6 +3,7 @@ from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.forms import AuthenticationForm, UserCreationForm
 from django.contrib.auth.models import User
 from django.shortcuts import redirect, render
+from django.utils.translation import gettext_lazy as _
 
 
 def register_view(request):
@@ -11,10 +12,10 @@ def register_view(request):
         if form.is_valid():
             user = form.save()
             login(request, user)
-            messages.success(request, "Registration successful!")
+            messages.success(request, _("Registration successful!"))
             return redirect("todo_list")
         else:
-            messages.error(request, "Registration failed. Please correct the errors.")
+            messages.error(request, _("Registration failed. Please correct the errors."))
     else:
         form = UserCreationForm()
     return render(request, "todos/register.html", {"form": form})
@@ -29,10 +30,10 @@ def login_view(request):
             user = authenticate(username=username, password=password)
             if user is not None:
                 login(request, user)
-                messages.success(request, f"Welcome back, {username}!")
+                messages.success(request, _("Welcome back, %(username)s!") % {"username": username})
                 return redirect("todo_list")
         else:
-            messages.error(request, "Invalid username or password.")
+            messages.error(request, _("Invalid username or password."))
     else:
         form = AuthenticationForm()
     return render(request, "todos/login.html", {"form": form})
@@ -40,7 +41,7 @@ def login_view(request):
 
 def logout_view(request):
     logout(request)
-    messages.info(request, "You have been logged out.")
+    messages.info(request, _("You have been logged out."))
     return redirect("login")
 
 
@@ -54,14 +55,16 @@ def demo_login(request):
         login(request, demo_user, backend="django.contrib.auth.backends.ModelBackend")
         messages.info(
             request,
-            "Welcome to Demo Mode!"
-            "You can view todos, mark them complete/incomplete, and reorder items. "
-            "However, you cannot create, edit, or delete items.",
+            _(
+                "Welcome to Demo Mode! "
+                "You can view todos, mark them complete/incomplete, and reorder items. "
+                "However, you cannot create, edit, or delete items."
+            ),
         )
         return redirect("todo_list")
     except User.DoesNotExist:
         messages.error(
             request,
-            "Demo mode is not available. Please contact the administrator.",
+            _("Demo mode is not available. Please contact the administrator."),
         )
         return redirect("login")

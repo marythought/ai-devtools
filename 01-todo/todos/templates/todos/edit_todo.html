@@ -1,32 +1,33 @@
 {% extends 'todos/base.html' %}
+{% load i18n %}
 
-{% block title %}Edit TODO{% endblock %}
+{% block title %}{% trans "Edit TODO" %}{% endblock %}
 
 {% block content %}
-    <h1>Edit TODO</h1>
+    <h1>{% trans "Edit TODO" %}</h1>
 
     {% if not perms.auth.can_modify_todos %}
         <div style="padding: 15px; background-color: #fff3cd; border: 1px solid #ffc107; border-radius: 4px; margin-top: 20px;">
-            <p style="margin: 0; color: #856404;"><strong>Demo Mode:</strong> You cannot edit todos. You can mark them complete/incomplete and reorder them from the main list.</p>
-            <a href="{% url 'todo_list' %}" class="btn" style="margin-top: 10px; display: inline-block;">Back to Todo List</a>
+            <p style="margin: 0; color: #856404;"><strong>{% trans "Demo Mode:" %}</strong> {% trans "You cannot edit todos. You can mark them complete/incomplete and reorder them from the main list." %}</p>
+            <a href="{% url 'todo_list' %}" class="btn" style="margin-top: 10px; display: inline-block;">{% trans "Back to Todo List" %}</a>
         </div>
     {% else %}
     <form method="post" style="margin-top: 20px;">
         {% csrf_token %}
         <div style="margin-bottom: 20px;">
-            <label for="title" style="display: block; margin-bottom: 8px; font-weight: 500;">Title *</label>
+            <label for="title" style="display: block; margin-bottom: 8px; font-weight: 500;">{% trans "Title" %} *</label>
             <input type="text" id="title" name="title" value="{{ todo.title }}" required style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 4px; font-size: 14px;">
         </div>
         <div style="margin-bottom: 20px;">
-            <label for="description" style="display: block; margin-bottom: 8px; font-weight: 500;">Description</label>
+            <label for="description" style="display: block; margin-bottom: 8px; font-weight: 500;">{% trans "Description" %}</label>
             <textarea id="description" name="description" rows="4" style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 4px; font-size: 14px; font-family: inherit;">{{ todo.description }}</textarea>
         </div>
         <div style="margin-bottom: 20px;">
-            <label style="display: block; margin-bottom: 8px; font-weight: 500;">Due Date</label>
+            <label style="display: block; margin-bottom: 8px; font-weight: 500;">{% trans "Due Date" %}</label>
             <div style="display: flex; gap: 10px;">
                 <input type="date" id="due_date_date" name="due_date_date" value="{% if todo.due_date %}{{ todo.due_date|date:'Y-m-d' }}{% endif %}" style="flex: 1; padding: 10px; border: 1px solid #ddd; border-radius: 4px; font-size: 14px;">
                 <select id="due_date_hour" name="due_date_hour" style="padding: 10px; border: 1px solid #ddd; border-radius: 4px; font-size: 14px;">
-                    <option value="">Hour (optional)</option>
+                    <option value="">{% trans "Hour (optional)" %}</option>
                     <option value="00" {% if todo.due_date and todo.due_date.hour == 0 %}selected{% endif %}>12 AM</option>
                     <option value="01" {% if todo.due_date and todo.due_date.hour == 1 %}selected{% endif %}>1 AM</option>
                     <option value="02" {% if todo.due_date and todo.due_date.hour == 2 %}selected{% endif %}>2 AM</option>
@@ -55,12 +56,12 @@
             </div>
         </div>
         <div style="margin-bottom: 20px;">
-            <label for="effort" style="display: block; margin-bottom: 8px; font-weight: 500;">Perceived Effort Level (Spoons) 🥄</label>
+            <label for="effort" style="display: block; margin-bottom: 8px; font-weight: 500;">{% trans "Perceived Effort Level (Spoons)" %} 🥄</label>
             <input type="number" id="effort" name="effort" value="{{ todo.effort }}" min="0" max="10" style="width: 100px; padding: 10px; border: 1px solid #ddd; border-radius: 4px; font-size: 14px;">
-            <small style="display: block; color: #666; margin-top: 4px;">0 (none) to 10 (maximum effort)</small>
+            <small style="display: block; color: #666; margin-top: 4px;">{% trans "0 (none) to 10 (maximum effort)" %}</small>
         </div>
         <div style="margin-bottom: 20px;">
-            <label style="display: block; margin-bottom: 8px; font-weight: 500;">Categories</label>
+            <label style="display: block; margin-bottom: 8px; font-weight: 500;">{% trans "Categories" %}</label>
             {% if categories %}
                 {% for category in categories %}
                     <div style="margin-bottom: 5px;">
@@ -73,12 +74,12 @@
                     </div>
                 {% endfor %}
             {% else %}
-                <p style="color: #999; font-size: 14px; font-style: italic;">No categories yet. <a href="{% url 'manage_categories' %}" style="color: #007bff;">Create one now!</a></p>
+                <p style="color: #999; font-size: 14px; font-style: italic;">{% trans "No categories yet." %} <a href="{% url 'manage_categories' %}" style="color: #007bff;">{% trans "Create one now!" %}</a></p>
             {% endif %}
         </div>
         <div style="display: flex; gap: 10px;">
-            <button type="submit" class="btn">Save Changes</button>
-            <a href="{% url 'todo_list' %}" class="btn" style="background-color: #6c757d;">Cancel</a>
+            <button type="submit" class="btn">{% trans "Save Changes" %}</button>
+            <a href="{% url 'todo_list' %}" class="btn" style="background-color: #6c757d;">{% trans "Cancel" %}</a>
         </div>
     </form>
     {% endif %}
