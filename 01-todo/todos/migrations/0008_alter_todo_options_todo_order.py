@@ -4,19 +4,26 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('todos', '0007_alter_category_options_category_order'),
+        ("todos", "0007_alter_category_options_category_order"),
     ]
 
     operations = [
         migrations.AlterModelOptions(
-            name='todo',
-            options={'ordering': [models.Case(models.When(completed_at__isnull=True, then=0), default=1), 'order', '-created_at']},
+            name="todo",
+            options={
+                "ordering": [
+                    models.Case(
+                        models.When(completed_at__isnull=True, then=0), default=1
+                    ),
+                    "order",
+                    "-created_at",
+                ]
+            },
         ),
         migrations.AddField(
-            model_name='todo',
-            name='order',
+            model_name="todo",
+            name="order",
             field=models.IntegerField(default=0),
         ),
     ]

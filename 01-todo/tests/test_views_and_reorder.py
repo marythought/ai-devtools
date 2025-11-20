@@ -5,7 +5,6 @@ from django.contrib.auth.models import User
 from django.test import TestCase
 from django.urls import reverse
 from django.utils import timezone
-
 from todos.models import Category, Todo
 
 
@@ -126,5 +125,7 @@ class TodoViewsAndReorderingTests(TestCase):
         self.assertFalse(User.objects.filter(username="x").exists())
 
         # invalid login
-        resp = self.client.post(reverse("login"), {"username": "noone", "password": "bad"})
+        resp = self.client.post(
+            reverse("login"), {"username": "noone", "password": "bad"}
+        )
         self.assertEqual(resp.status_code, 200)

@@ -10,7 +10,6 @@ This module covers:
 from django.contrib.auth.models import User
 from django.test import TestCase
 from django.urls import reverse
-
 from todos.models import Category, Todo
 
 
@@ -21,7 +20,9 @@ class CompleteAndFollowupViewTests(TestCase):
     def setUpTestData(cls):
         """Create shared test data that doesn't change between tests."""
         cls.user = User.objects.create_user(username="testuser", password="testpass123")
-        cls.other_user = User.objects.create_user(username="otheruser", password="testpass123")
+        cls.other_user = User.objects.create_user(
+            username="otheruser", password="testpass123"
+        )
 
     def setUp(self):
         """Set up test client for each test."""
@@ -80,7 +81,9 @@ class CompleteAndFollowupViewTests(TestCase):
         """Test that users cannot complete todos belonging to other users."""
         other_todo = Todo.objects.create(title="Other's Todo", user=self.other_user)
 
-        response = self.client.post(reverse("complete_and_followup", args=[other_todo.id]))
+        response = self.client.post(
+            reverse("complete_and_followup", args=[other_todo.id])
+        )
 
         # Should get 404
         self.assertEqual(response.status_code, 404)
@@ -111,7 +114,9 @@ class ManageCategoriesViewTests(TestCase):
     def setUpTestData(cls):
         """Create shared test data that doesn't change between tests."""
         cls.user = User.objects.create_user(username="testuser", password="testpass123")
-        cls.other_user = User.objects.create_user(username="otheruser", password="testpass123")
+        cls.other_user = User.objects.create_user(
+            username="otheruser", password="testpass123"
+        )
 
     def setUp(self):
         """Set up test client for each test."""
@@ -148,14 +153,18 @@ class ManageCategoriesViewTests(TestCase):
         """Test creating a new category via POST request."""
         initial_count = Category.objects.filter(user=self.user).count()
 
-        response = self.client.post(reverse("manage_categories"), {"name": "New Category"})
+        response = self.client.post(
+            reverse("manage_categories"), {"name": "New Category"}
+        )
 
         # Should redirect back to manage_categories
         self.assertEqual(response.status_code, 302)
         self.assertEqual(response.url, reverse("manage_categories"))
 
         # Category should be created
-        self.assertEqual(Category.objects.filter(user=self.user).count(), initial_count + 1)
+        self.assertEqual(
+            Category.objects.filter(user=self.user).count(), initial_count + 1
+        )
         category = Category.objects.get(name="New Category", user=self.user)
         self.assertEqual(category.name, "New Category")
 
@@ -179,7 +188,9 @@ class DeleteCategoryViewTests(TestCase):
     def setUpTestData(cls):
         """Create shared test data that doesn't change between tests."""
         cls.user = User.objects.create_user(username="testuser", password="testpass123")
-        cls.other_user = User.objects.create_user(username="otheruser", password="testpass123")
+        cls.other_user = User.objects.create_user(
+            username="otheruser", password="testpass123"
+        )
 
     def setUp(self):
         """Set up test client for each test."""
@@ -209,9 +220,13 @@ class DeleteCategoryViewTests(TestCase):
 
     def test_cannot_delete_other_user_category(self):
         """Test that users cannot delete categories belonging to other users."""
-        other_category = Category.objects.create(name="Other's Category", user=self.other_user)
+        other_category = Category.objects.create(
+            name="Other's Category", user=self.other_user
+        )
 
-        response = self.client.post(reverse("delete_category", args=[other_category.id]))
+        response = self.client.post(
+            reverse("delete_category", args=[other_category.id])
+        )
 
         # Should get 404
         self.assertEqual(response.status_code, 404)

@@ -20,7 +20,9 @@ def permission_required_to_modify(view_func):
     @wraps(view_func)
     def wrapper(request, *args, **kwargs):
         if not user_can_modify_todos(request.user):
-            raise PermissionDenied(_("You do not have permission to modify todos or categories."))
+            raise PermissionDenied(
+                _("You do not have permission to modify todos or categories.")
+            )
         return view_func(request, *args, **kwargs)
 
     return wrapper
@@ -31,7 +33,9 @@ def parse_due_date(due_date_date, due_date_hour):
     if not due_date_date:
         return None
     hour = int(due_date_hour) if due_date_hour else 0
-    naive_dt = datetime.strptime(due_date_date, "%Y-%m-%d").replace(hour=hour, minute=0, second=0)
+    naive_dt = datetime.strptime(due_date_date, "%Y-%m-%d").replace(
+        hour=hour, minute=0, second=0
+    )
     return timezone.make_aware(naive_dt)
 
 
@@ -47,9 +51,9 @@ class TodoListView(LoginRequiredMixin, ListView):
         view_mode = self.request.GET.get("view")
         if view_mode == "due_soon":
             # Show only incomplete todos with due dates, ordered by due date ascending
-            queryset = queryset.filter(completed_at__isnull=True, due_date__isnull=False).order_by(
-                "due_date"
-            )
+            queryset = queryset.filter(
+                completed_at__isnull=True, due_date__isnull=False
+            ).order_by("due_date")
         else:
             # Normal category filtering
             category_id = self.request.GET.get("category")
@@ -85,7 +89,9 @@ def create_todo(request):
     if request.method == "POST":
         # Check permission for POST requests (actual creation)
         if not user_can_modify_todos(request.user):
-            raise PermissionDenied(_("You do not have permission to modify todos or categories."))
+            raise PermissionDenied(
+                _("You do not have permission to modify todos or categories.")
+            )
 
         title = request.POST.get("title")
         description = request.POST.get("description", "")
@@ -127,7 +133,10 @@ def create_todo(request):
     return render(
         request,
         "todos/create_todo.html",
-        {"categories": categories, "preselected_category_ids": preselected_category_ids},
+        {
+            "categories": categories,
+            "preselected_category_ids": preselected_category_ids,
+        },
     )
 
 
@@ -157,7 +166,9 @@ def complete_and_followup(request, todo_id):
 
         # Redirect to create_todo with category pre-selected
         if category_ids:
-            category_params = "&".join([f"category={cat_id}" for cat_id in category_ids])
+            category_params = "&".join(
+                [f"category={cat_id}" for cat_id in category_ids]
+            )
             return redirect(f"/create/?{category_params}")
         else:
             return redirect("create_todo")
@@ -171,7 +182,9 @@ def edit_todo(request, todo_id):
     if request.method == "POST":
         # Check permission for POST requests (actual editing)
         if not user_can_modify_todos(request.user):
-            raise PermissionDenied(_("You do not have permission to modify todos or categories."))
+            raise PermissionDenied(
+                _("You do not have permission to modify todos or categories.")
+            )
 
         title = request.POST.get("title")
         description = request.POST.get("description", "")
@@ -200,7 +213,9 @@ def edit_todo(request, todo_id):
             todo.categories.set(category_ids)
         return redirect("todo_list")
     categories = Category.objects.filter(user=request.user)
-    return render(request, "todos/edit_todo.html", {"todo": todo, "categories": categories})
+    return render(
+        request, "todos/edit_todo.html", {"todo": todo, "categories": categories}
+    )
 
 
 @login_required
@@ -242,7 +257,8 @@ def reorder_todos(request):
 
             # Get all todos to check completion status
             todos = {
-                todo.id: todo for todo in Todo.objects.filter(id__in=todo_ids, user=request.user)
+                todo.id: todo
+                for todo in Todo.objects.filter(id__in=todo_ids, user=request.user)
             }
 
             # Validate that incomplete items aren't being placed after completed items
@@ -256,7 +272,9 @@ def reorder_todos(request):
                         return JsonResponse(
                             {
                                 "status": "error",
-                                "message": _("Cannot place incomplete items after completed items"),
+                                "message": _(
+                                    "Cannot place incomplete items after completed items"
+                                ),
                             },
                             status=400,
                         )
@@ -279,7 +297,9 @@ def manage_categories(request):
     if request.method == "POST":
         # Check permission for POST requests (actual creation)
         if not user_can_modify_todos(request.user):
-            raise PermissionDenied(_("You do not have permission to modify todos or categories."))
+            raise PermissionDenied(
+                _("You do not have permission to modify todos or categories.")
+            )
 
         name = request.POST.get("name")
         if name:

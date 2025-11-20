@@ -11,7 +11,6 @@ This command:
 from django.contrib.auth.models import User
 from django.core.management.base import BaseCommand
 from django.utils import timezone
-
 from todos.models import Category, Todo
 from todos.permissions import CAN_MODIFY_TODOS
 
@@ -52,11 +51,15 @@ class Command(BaseCommand):
             )
             demo_user.user_permissions.remove(permission)
             self.stdout.write(
-                self.style.SUCCESS(f"Removed modify permission from {demo_user.username}")
+                self.style.SUCCESS(
+                    f"Removed modify permission from {demo_user.username}"
+                )
             )
 
         action = "Created" if created else "Updated"
-        self.stdout.write(self.style.SUCCESS(f"{action} demo user: {demo_user.username}"))
+        self.stdout.write(
+            self.style.SUCCESS(f"{action} demo user: {demo_user.username}")
+        )
 
         # Create sample data if requested
         if options["with_sample_data"]:
@@ -65,7 +68,9 @@ class Command(BaseCommand):
     def _create_sample_data(self, user):
         """Create sample categories and todos for the demo user."""
         # Create categories
-        work_cat, _ = Category.objects.get_or_create(name="Work", user=user, defaults={"order": 1})
+        work_cat, _ = Category.objects.get_or_create(
+            name="Work", user=user, defaults={"order": 1}
+        )
         personal_cat, _ = Category.objects.get_or_create(
             name="Personal", user=user, defaults={"order": 2}
         )

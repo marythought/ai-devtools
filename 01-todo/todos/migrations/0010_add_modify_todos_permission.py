@@ -14,9 +14,7 @@ def create_modify_todos_permission(apps, schema_editor):
     User = apps.get_model("auth", "User")
 
     # Get or create the ContentType for User model
-    content_type, _ = ContentType.objects.get_or_create(
-        app_label="auth", model="user"
-    )
+    content_type, _ = ContentType.objects.get_or_create(app_label="auth", model="user")
 
     # Create the permission
     permission, created = Permission.objects.get_or_create(
@@ -47,7 +45,6 @@ def remove_modify_todos_permission(apps, schema_editor):
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
         ("todos", "0009_todo_effort"),
         ("auth", "__latest__"),

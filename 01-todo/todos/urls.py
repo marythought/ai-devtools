@@ -15,7 +15,11 @@ urlpatterns = [
     path("delete/<int:todo_id>/", views.delete_todo, name="delete_todo"),
     path("reorder/", views.reorder_todos, name="reorder_todos"),
     path("categories/", views.manage_categories, name="manage_categories"),
-    path("categories/delete/<int:category_id>/", views.delete_category, name="delete_category"),
+    path(
+        "categories/delete/<int:category_id>/",
+        views.delete_category,
+        name="delete_category",
+    ),
     path("categories/reorder/", views.reorder_categories, name="reorder_categories"),
     path("register/", auth_views.register_view, name="register"),
     path("login/", auth_views.login_view, name="login"),

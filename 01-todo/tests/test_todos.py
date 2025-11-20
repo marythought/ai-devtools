@@ -1,7 +1,6 @@
 from django.contrib.auth.models import User
 from django.test import Client, TestCase
 from django.urls import reverse
-
 from todos.models import Category, Todo
 
 
@@ -29,7 +28,9 @@ class TodoModelTests(TestCase):
         from django.utils import timezone
 
         Todo.objects.create(title="Incomplete", user=self.user)
-        Todo.objects.create(title="Completed", completed_at=timezone.now(), user=self.user)
+        Todo.objects.create(
+            title="Completed", completed_at=timezone.now(), user=self.user
+        )
         Todo.objects.create(title="Also Incomplete", user=self.user)
 
         todos = Todo.objects.all()
@@ -43,7 +44,9 @@ class TodoListViewTests(TestCase):
     def setUpTestData(cls):
         """Create shared test data that doesn't change between tests."""
         cls.user = User.objects.create_user(username="testuser", password="testpass123")
-        cls.other_user = User.objects.create_user(username="otheruser", password="testpass123")
+        cls.other_user = User.objects.create_user(
+            username="otheruser", password="testpass123"
+        )
 
     def setUp(self):
         """Set up test client for each test."""
@@ -90,7 +93,8 @@ class CreateTodoViewTests(TestCase):
     def test_create_todo_with_valid_data(self):
         self.client.login(username="testuser", password="testpass123")
         response = self.client.post(
-            reverse("create_todo"), {"title": "New Todo", "description": "New Description"}
+            reverse("create_todo"),
+            {"title": "New Todo", "description": "New Description"},
         )
         self.assertEqual(response.status_code, 302)
         self.assertEqual(Todo.objects.count(), 1)
@@ -110,7 +114,9 @@ class EditTodoViewTests(TestCase):
     def setUpTestData(cls):
         """Create shared test data that doesn't change between tests."""
         cls.user = User.objects.create_user(username="testuser", password="testpass123")
-        cls.other_user = User.objects.create_user(username="otheruser", password="testpass123")
+        cls.other_user = User.objects.create_user(
+            username="otheruser", password="testpass123"
+        )
 
     def setUp(self):
         """Set up test client for each test."""
@@ -181,7 +187,9 @@ class DeleteTodoViewTests(TestCase):
     def setUpTestData(cls):
         """Create shared test data that doesn't change between tests."""
         cls.user = User.objects.create_user(username="testuser", password="testpass123")
-        cls.other_user = User.objects.create_user(username="otheruser", password="testpass123")
+        cls.other_user = User.objects.create_user(
+            username="otheruser", password="testpass123"
+        )
 
     def setUp(self):
         """Set up test client for each test."""
@@ -276,7 +284,11 @@ class TodoCategoryTests(TestCase):
 
         response = self.client.post(
             reverse("edit_todo", args=[todo.id]),
-            {"title": "Updated Todo", "description": "Updated", "categories": [self.category1.id]},
+            {
+                "title": "Updated Todo",
+                "description": "Updated",
+                "categories": [self.category1.id],
+            },
         )
         self.assertEqual(response.status_code, 302)
         todo.refresh_from_db()
@@ -331,7 +343,9 @@ class CategoryFilterTests(TestCase):
 
     def test_filter_by_category(self):
         self.client.login(username="testuser", password="testpass123")
-        response = self.client.get(reverse("todo_list") + f"?category={self.category1.id}")
+        response = self.client.get(
+            reverse("todo_list") + f"?category={self.category1.id}"
+        )
 
         todos = response.context["todos"]
         self.assertEqual(len(todos), 2)
@@ -391,7 +405,8 @@ class DueDateTests(TestCase):
     def test_create_todo_without_due_date(self):
         self.client.login(username="testuser", password="testpass123")
         response = self.client.post(
-            reverse("create_todo"), {"title": "Todo without due date", "description": "No deadline"}
+            reverse("create_todo"),
+            {"title": "Todo without due date", "description": "No deadline"},
         )
         self.assertEqual(response.status_code, 302)
         todo = Todo.objects.first()

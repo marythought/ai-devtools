@@ -15,7 +15,9 @@ def register_view(request):
             messages.success(request, _("Registration successful!"))
             return redirect("todo_list")
         else:
-            messages.error(request, _("Registration failed. Please correct the errors."))
+            messages.error(
+                request, _("Registration failed. Please correct the errors.")
+            )
     else:
         form = UserCreationForm()
     return render(request, "todos/register.html", {"form": form})
@@ -30,7 +32,9 @@ def login_view(request):
             user = authenticate(username=username, password=password)
             if user is not None:
                 login(request, user)
-                messages.success(request, _("Welcome back, %(username)s!") % {"username": username})
+                messages.success(
+                    request, _("Welcome back, %(username)s!") % {"username": username}
+                )
                 return redirect("todo_list")
         else:
             messages.error(request, _("Invalid username or password."))
