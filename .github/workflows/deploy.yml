@@ -36,14 +36,16 @@ jobs:
       env:
         PYTHONANYWHERE_USERNAME: ${{ secrets.PYTHONANYWHERE_USERNAME }}
         PYTHONANYWHERE_DOMAIN: ${{ secrets.PYTHONANYWHERE_DOMAIN }}
+        PYTHONANYWHERE_API_TOKEN: ${{ secrets.PYTHONANYWHERE_API_TOKEN }}
       run: |
         echo "Starting deployment to PythonAnywhere..."
 
         ssh -i ~/.ssh/pythonanywhere_key \
           -o StrictHostKeyChecking=no \
           ${PYTHONANYWHERE_USERNAME}@ssh.pythonanywhere.com \
-          'bash -s' << 'ENDSSH'
+          "bash -s ${PYTHONANYWHERE_DOMAIN}" << 'ENDSSH'
           set -e
+          DOMAIN=$1
 
           echo "Pulling latest code..."
           cd ~/ai-devtools/01-todo
@@ -64,11 +66,23 @@ jobs:
           echo "Setting up demo user..."
           python manage.py create_demo_user --with-sample-data
 
-          echo "Reloading web app..."
-          touch /var/www/${PYTHONANYWHERE_DOMAIN}_wsgi.py
-
-          echo "✅ Deployment completed successfully!"
+          echo "✅ Deployment commands completed successfully!"
         ENDSSH
+
+        echo "Reloading web app via API..."
+        reload_response=$(curl -s -w "\n%{http_code}" -X POST \
+          "https://www.pythonanywhere.com/api/v0/user/${PYTHONANYWHERE_USERNAME}/webapps/${PYTHONANYWHERE_DOMAIN}/reload/" \
+          -H "Authorization: Token ${PYTHONANYWHERE_API_TOKEN}")
+
+        reload_http_code=$(echo "$reload_response" | tail -n1)
+        reload_body=$(echo "$reload_response" | head -n-1)
+
+        if [ "$reload_http_code" = "200" ]; then
+          echo "✅ Web app reloaded successfully!"
+        else
+          echo "⚠️  Reload returned HTTP $reload_http_code: $reload_body"
+          echo "You may need to manually reload from PythonAnywhere dashboard"
+        fi
 
         echo ""
         echo "Deployment complete! Check your app at: https://${PYTHONANYWHERE_DOMAIN}"
