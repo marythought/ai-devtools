@@ -11,9 +11,10 @@ repos:
       - id: check-merge-conflict
       - id: debug-statements
 
-  - repo: https://github.com/charliermarsh/ruff-pre-commit
-    rev: v0.0.206
+  - repo: https://github.com/astral-sh/ruff-pre-commit
+    rev: v0.14.5
     hooks:
-      - id: ruff
+      - id: ruff-check
         args: ["--fix"]
         exclude: ^.*\b(migrations)\b.*$
+      - id: ruff-format
