@@ -10,7 +10,7 @@ A full-stack TODO application built with Django featuring user authentication, c
 
 Deployed via https://marythought.pythonanywhere.com/
 
-**Tech Stack:** Python, Django, SQLite, Pythonanywhere
+**Tech Stack:** Python, Django, SQLite, Pythonanywhere, Codecov, Github Actions
 
 See [01-todo/homework.md](01-todo/homework.md) for more details about the project requirements.
 
