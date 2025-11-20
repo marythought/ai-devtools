@@ -1,9 +1,10 @@
+{% load i18n %}
 <!DOCTYPE html>
-<html lang="en">
+<html lang="{{ LANGUAGE_CODE }}">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{% block title %}TODO App{% endblock %}</title>
+    <title>{% block title %}{% trans "TODO App" %}{% endblock %}</title>
     {% block extra_css %}{% endblock %}
     <style>
         * {
@@ -96,9 +97,24 @@
         {% if user.is_authenticated %}
         <div class="header">
             <div class="user-info">
-                Logged in as: <strong>{{ user.username }}</strong>
+                {% trans "Logged in as:" %} <strong>{{ user.username }}</strong>
             </div>
-            <a href="{% url 'logout' %}" class="btn btn-danger">Logout</a>
+            <div style="display: flex; gap: 10px; align-items: center;">
+                <form action="{% url 'set_language' %}" method="post" style="margin: 0;">
+                    {% csrf_token %}
+                    <input name="next" type="hidden" value="{{ request.path }}">
+                    <select name="language" onchange="this.form.submit()" style="padding: 8px; border: 1px solid #ddd; border-radius: 4px; font-size: 14px;">
+                        {% get_current_language as LANGUAGE_CODE %}
+                        {% get_available_languages as LANGUAGES %}
+                        {% for lang_code, lang_name in LANGUAGES %}
+                            <option value="{{ lang_code }}" {% if lang_code == LANGUAGE_CODE %}selected{% endif %}>
+                                {{ lang_name }}
+                            </option>
+                        {% endfor %}
+                    </select>
+                </form>
+                <a href="{% url 'logout' %}" class="btn btn-danger">{% trans "Logout" %}</a>
+            </div>
         </div>
         {% endif %}
 

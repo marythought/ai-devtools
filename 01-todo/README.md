@@ -1,6 +1,6 @@
 # Django TODO Application
 
-A full-stack TODO application built with Django featuring user authentication, category management and CRUD operations.
+A full-stack TODO application built with Django featuring user authentication, category management and CRUD operations. It contains a demo account and features CI/CD setup and internationalization.
 
 [![CI Status](https://github.com/marythought/ai-devtools/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/marythought/ai-devtools/actions/workflows/ci.yml)
 
@@ -12,7 +12,7 @@ Deployed via https://marythought.pythonanywhere.com/
 
 **Tech Stack:** Python, Django, SQLite, Pythonanywhere, Codecov, Github Actions
 
-See [01-todo/homework.md](01-todo/homework.md) for more details about the project requirements.
+See [01-overview/homework.md](https://github.com/DataTalksClub/ai-dev-tools-zoomcamp/blob/main/cohorts/2025/01-overview/homework.md) for more details about the project requirements.
 
 ## Running the Application
 
@@ -60,7 +60,7 @@ Code Coverage
 
 The CI/CD pipeline runs in two stages and is fully automatic to PythonAnywhere.
 
-### 1. Test Stage
+### 1. Linter/Test Stage
 - Runs on every push to the `main` branch that modifies files in `01-todo/`
 - Sets up Python 3.9
 - Installs dependencies from `requirements.txt`
@@ -68,8 +68,8 @@ The CI/CD pipeline runs in two stages and is fully automatic to PythonAnywhere.
 - Deployment only proceeds if all tests pass
 
 ### 2. Deploy Stage
-- Only runs if tests pass
-- Uses PythonAnywhere API to run deployment commands:
+- Only runs on a commit to main if tests pass
+- Uses PythonAnywhere SSH to run deployment commands & API to refresh the app:
   1. `git pull origin main` - Pull latest code
   2. `pip install -r requirements.txt` - Update dependencies
   3. `python manage.py migrate` - Run database migrations

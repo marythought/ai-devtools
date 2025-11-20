@@ -1,0 +1,321 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
+# This file is distributed under the same license as the PACKAGE package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: PACKAGE VERSION\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2025-11-20 06:10+0000\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"Language: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+#: todos/auth_views.py:15
+msgid "Registration successful!"
+msgstr "¡Registro exitoso!"
+
+#: todos/auth_views.py:18
+msgid "Registration failed. Please correct the errors."
+msgstr "Registro fallido. Por favor corrige los errores."
+
+#: todos/auth_views.py:33
+#, python-format
+msgid "Welcome back, %(username)s!"
+msgstr "¡Bienvenido de nuevo, %(username)s!"
+
+#: todos/auth_views.py:36
+msgid "Invalid username or password."
+msgstr "Nombre de usuario o contraseña inválidos."
+
+#: todos/auth_views.py:44
+msgid "You have been logged out."
+msgstr "Has cerrado sesión."
+
+#: todos/auth_views.py:58
+msgid ""
+"Welcome to Demo Mode! You can view todos, mark them complete/incomplete, and "
+"reorder items. However, you cannot create, edit, or delete items."
+msgstr ""
+"¡Bienvenido al Modo Demo! Puedes ver todos, marcarlos como completos/incompletos "
+"y reordenar elementos. Sin embargo, no puedes crear, editar o eliminar elementos."
+
+#: todos/auth_views.py:66
+msgid "Demo mode is not available. Please contact the administrator."
+msgstr "El modo demo no está disponible. Por favor contacta al administrador."
+
+#: todos/templates/todos/base.html:7 todos/templates/todos/login.html:4
+#: todos/templates/todos/register.html:4
+msgid "TODO App"
+msgstr "Aplicación TODO"
+
+#: todos/templates/todos/base.html:100
+msgid "Logged in as:"
+msgstr "Sesión iniciada como:"
+
+#: todos/templates/todos/base.html:103
+msgid "Logout"
+msgstr "Cerrar sesión"
+
+#: todos/templates/todos/create_todo.html:4
+#: todos/templates/todos/create_todo.html:79
+msgid "Create TODO"
+msgstr "Crear TODO"
+
+#: todos/templates/todos/create_todo.html:7
+msgid "Create New TODO"
+msgstr "Crear Nuevo TODO"
+
+#: todos/templates/todos/create_todo.html:11
+#: todos/templates/todos/edit_todo.html:11
+#: todos/templates/todos/manage_categories.html:32
+msgid "Demo Mode:"
+msgstr "Modo Demo:"
+
+#: todos/templates/todos/create_todo.html:11
+msgid ""
+"You cannot create new todos. You can mark existing todos complete/incomplete "
+"and reorder them."
+msgstr ""
+"No puedes crear nuevos todos. Puedes marcar los todos existentes como completos/incompletos "
+"y reordenarlos."
+
+#: todos/templates/todos/create_todo.html:12
+#: todos/templates/todos/edit_todo.html:12
+msgid "Back to Todo List"
+msgstr "Volver a la Lista de Todos"
+
+#: todos/templates/todos/create_todo.html:18
+#: todos/templates/todos/edit_todo.html:18
+msgid "Title"
+msgstr "Título"
+
+#: todos/templates/todos/create_todo.html:22
+#: todos/templates/todos/edit_todo.html:22
+msgid "Description"
+msgstr "Descripción"
+
+#: todos/templates/todos/create_todo.html:26
+#: todos/templates/todos/edit_todo.html:26
+msgid "Due Date"
+msgstr "Fecha de Vencimiento"
+
+#: todos/templates/todos/create_todo.html:30
+#: todos/templates/todos/edit_todo.html:30
+msgid "Hour (optional)"
+msgstr "Hora (opcional)"
+
+#: todos/templates/todos/create_todo.html:59
+#: todos/templates/todos/edit_todo.html:59
+msgid "Perceived Effort Level (Spoons)"
+msgstr "Nivel de Esfuerzo Percibido (Cucharas)"
+
+#: todos/templates/todos/create_todo.html:61
+#: todos/templates/todos/edit_todo.html:61
+msgid "0 (none) to 10 (maximum effort)"
+msgstr "0 (ninguno) a 10 (esfuerzo máximo)"
+
+#: todos/templates/todos/create_todo.html:64
+#: todos/templates/todos/edit_todo.html:64
+msgid "Categories"
+msgstr "Categorías"
+
+#: todos/templates/todos/create_todo.html:75
+#: todos/templates/todos/edit_todo.html:77
+msgid "No categories yet."
+msgstr "Aún no hay categorías."
+
+#: todos/templates/todos/create_todo.html:75
+#: todos/templates/todos/edit_todo.html:77
+msgid "Create one now!"
+msgstr "¡Crea una ahora!"
+
+#: todos/templates/todos/create_todo.html:80
+#: todos/templates/todos/edit_todo.html:82
+msgid "Cancel"
+msgstr "Cancelar"
+
+#: todos/templates/todos/edit_todo.html:4
+#: todos/templates/todos/edit_todo.html:7
+msgid "Edit TODO"
+msgstr "Editar TODO"
+
+#: todos/templates/todos/edit_todo.html:11
+msgid ""
+"You cannot edit todos. You can mark them complete/incomplete and reorder "
+"them from the main list."
+msgstr ""
+"No puedes editar todos. Puedes marcarlos como completos/incompletos y reordenarlos "
+"desde la lista principal."
+
+#: todos/templates/todos/edit_todo.html:81
+msgid "Save Changes"
+msgstr "Guardar Cambios"
+
+#: todos/templates/todos/login.html:4 todos/templates/todos/login.html:7
+#: todos/templates/todos/login.html:36
+msgid "Login"
+msgstr "Iniciar Sesión"
+
+#: todos/templates/todos/login.html:14 todos/templates/todos/register.html:14
+msgid "Username:"
+msgstr "Nombre de usuario:"
+
+#: todos/templates/todos/login.html:26 todos/templates/todos/register.html:31
+msgid "Password:"
+msgstr "Contraseña:"
+
+#: todos/templates/todos/login.html:40
+msgid "Want to try it out first?"
+msgstr "¿Quieres probarlo primero?"
+
+#: todos/templates/todos/login.html:42
+msgid "Try Demo Mode (Read Only)"
+msgstr "Probar Modo Demo (Solo Lectura)"
+
+#: todos/templates/todos/login.html:47
+msgid "Don't have an account?"
+msgstr "¿No tienes una cuenta?"
+
+#: todos/templates/todos/login.html:47
+msgid "Register here"
+msgstr "Regístrate aquí"
+
+#: todos/templates/todos/manage_categories.html:9
+#: todos/templates/todos/manage_categories.html:12
+#: todos/templates/todos/todo_list.html:21
+msgid "Manage Categories"
+msgstr "Administrar Categorías"
+
+#: todos/templates/todos/manage_categories.html:15
+msgid "Back to TODOs"
+msgstr "Volver a TODOs"
+
+#: todos/templates/todos/manage_categories.html:19
+msgid "Add New Category"
+msgstr "Agregar Nueva Categoría"
+
+#: todos/templates/todos/manage_categories.html:24
+msgid "Category Name"
+msgstr "Nombre de Categoría"
+
+#: todos/templates/todos/manage_categories.html:27
+msgid "Add Category"
+msgstr "Agregar Categoría"
+
+#: todos/templates/todos/manage_categories.html:32
+msgid "You cannot create or delete categories, but you can reorder them below."
+msgstr "No puedes crear o eliminar categorías, pero puedes reordenarlas abajo."
+
+#: todos/templates/todos/manage_categories.html:36
+msgid "Your Categories"
+msgstr "Tus Categorías"
+
+#: todos/templates/todos/manage_categories.html:37
+msgid "Drag and drop to reorder"
+msgstr "Arrastra y suelta para reordenar"
+
+#: todos/templates/todos/manage_categories.html:47
+#: todos/templates/todos/todo_list.html:71
+msgid "Created:"
+msgstr "Creado:"
+
+#: todos/templates/todos/manage_categories.html:54
+#: todos/templates/todos/todo_list.html:119
+msgid "Delete"
+msgstr "Eliminar"
+
+#: todos/templates/todos/manage_categories.html:62
+msgid "No categories yet. Create your first one above!"
+msgstr "Aún no hay categorías. ¡Crea tu primera categoría arriba!"
+
+#: todos/templates/todos/register.html:4 todos/templates/todos/register.html:7
+#: todos/templates/todos/register.html:63
+msgid "Register"
+msgstr "Registrarse"
+
+#: todos/templates/todos/register.html:48
+msgid "Confirm Password:"
+msgstr "Confirmar Contraseña:"
+
+#: todos/templates/todos/register.html:67
+msgid "Already have an account?"
+msgstr "¿Ya tienes una cuenta?"
+
+#: todos/templates/todos/register.html:67
+msgid "Login here"
+msgstr "Inicia sesión aquí"
+
+#: todos/templates/todos/todo_list.html:12
+msgid "TODO List"
+msgstr "Lista de TODO"
+
+#: todos/templates/todos/todo_list.html:15
+msgid "My TODO List"
+msgstr "Mi Lista de TODO"
+
+#: todos/templates/todos/todo_list.html:20
+msgid "Add New TODO"
+msgstr "Agregar Nuevo TODO"
+
+#: todos/templates/todos/todo_list.html:23
+msgid "Demo Mode - Limited Access"
+msgstr "Modo Demo - Acceso Limitado"
+
+#: todos/templates/todos/todo_list.html:30
+msgid "Show Completed"
+msgstr "Mostrar Completados"
+
+#: todos/templates/todos/todo_list.html:40
+msgid "All TODOs"
+msgstr "Todos los TODOs"
+
+#: todos/templates/todos/todo_list.html:43
+msgid "Due Soon"
+msgstr "Próximo a Vencer"
+
+#: todos/templates/todos/todo_list.html:73
+msgid "Due:"
+msgstr "Vence:"
+
+#: todos/templates/todos/todo_list.html:73
+msgid "at"
+msgstr "a las"
+
+#: todos/templates/todos/todo_list.html:76
+msgid "Completed:"
+msgstr "Completado:"
+
+#: todos/templates/todos/todo_list.html:94
+msgid "Dunzo"
+msgstr "Hecho"
+
+#: todos/templates/todos/todo_list.html:101
+msgid "Followup"
+msgstr "Seguimiento"
+
+#: todos/templates/todos/todo_list.html:110
+msgid "Mark Incomplete"
+msgstr "Marcar Incompleto"
+
+#: todos/templates/todos/todo_list.html:116
+msgid "Edit"
+msgstr "Editar"
+
+#: todos/templates/todos/todo_list.html:128
+msgid "No todos yet. Create your first one!"
+msgstr "Aún no hay todos. ¡Crea tu primer todo!"
+
+#: todos/views.py:23 todos/views.py:88 todos/views.py:174 todos/views.py:282
+msgid "You do not have permission to modify todos or categories."
+msgstr "No tienes permiso para modificar todos o categorías."
+
+#: todos/views.py:259
+msgid "Cannot place incomplete items after completed items"
+msgstr "No se pueden colocar elementos incompletos después de elementos completados"

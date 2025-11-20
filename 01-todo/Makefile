@@ -5,6 +5,7 @@ PORT?=8000
 
 .PHONY: help venv install setup migrate collectstatic createsuperuser run test
 .PHONY: coverage coverage-html coverage-install coverage-clean
+.PHONY: lint format lint-check
 
 help:
 	@echo "Makefile targets:"
@@ -18,6 +19,9 @@ help:
 	@echo "  make stop            # stop server by killing process listening on PORT"
 	@echo "  make restart         # stop then start the development server"
 	@echo "  make test            # run Django tests"
+	@echo "  make lint            # run ruff linter and formatter checks"
+	@echo "  make lint-check      # alias for lint"
+	@echo "  make format          # auto-fix with ruff (format + lint --fix)"
 
 venv:
 	@if [ ! -d "$(VENV)" ]; then \
@@ -73,6 +77,14 @@ coverage-html:
 
 coverage-clean:
 	@rm -rf htmlcov .coverage || true
+
+lint: lint-check
+
+lint-check:
+	@. $(VENV)/bin/activate && ruff check . && ruff format --check .
+
+format:
+	@. $(VENV)/bin/activate && ruff check --fix . && ruff format .
 
 ssh:
 	@ssh -i ../pythonanywhere_deploy_key marythought@ssh.pythonanywhere.com

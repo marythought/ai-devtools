@@ -55,7 +55,9 @@ class DemoLoginViewTests(TestCase):
     @classmethod
     def setUpTestData(cls):
         """Create demo user for testing."""
-        cls.demo_user = User.objects.create_user(username="demo-mode", password="demo1234")
+        cls.demo_user = User.objects.create_user(
+            username="demo-mode", password="demo1234"
+        )
         # Remove modify permission
         from django.contrib.auth.models import Permission
 
@@ -97,8 +99,12 @@ class DemoModeViewRestrictionTests(TestCase):
     @classmethod
     def setUpTestData(cls):
         """Create demo user and regular user for testing."""
-        cls.demo_user = User.objects.create_user(username="demo-mode", password="demo1234")
-        cls.regular_user = User.objects.create_user(username="regular", password="testpass123")
+        cls.demo_user = User.objects.create_user(
+            username="demo-mode", password="demo1234"
+        )
+        cls.regular_user = User.objects.create_user(
+            username="regular", password="testpass123"
+        )
 
         # Remove modify permission from demo user
         from django.contrib.auth.models import Permission
@@ -183,7 +189,7 @@ class DemoModeViewRestrictionTests(TestCase):
 
         response = self.client.post(
             reverse("reorder_todos"),
-            '{"todo_ids": [%d, %d]}' % (todo2.id, todo1.id),
+            f'{{"todo_ids": [{todo2.id}, {todo1.id}]}}',
             content_type="application/json",
         )
 
@@ -198,7 +204,9 @@ class DemoModeViewRestrictionTests(TestCase):
 
     def test_demo_user_cannot_create_category(self):
         """Test that demo user cannot create categories."""
-        response = self.client.post(reverse("manage_categories"), {"name": "New Category"})
+        response = self.client.post(
+            reverse("manage_categories"), {"name": "New Category"}
+        )
 
         # Should get permission denied
         self.assertEqual(response.status_code, 403)
@@ -233,7 +241,7 @@ class DemoModeViewRestrictionTests(TestCase):
 
         response = self.client.post(
             reverse("reorder_categories"),
-            '{"category_ids": [%d, %d]}' % (cat2.id, cat1.id),
+            f'{{"category_ids": [{cat2.id}, {cat1.id}]}}',
             content_type="application/json",
         )
 

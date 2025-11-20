@@ -1,5 +1,5 @@
 {% extends 'todos/base.html' %}
-{% load static repeat_tags %}
+{% load static repeat_tags i18n %}
 
 {% block extra_css %}
 <link rel="stylesheet" href="{% static 'todos/css/todo-list.css' %}">
@@ -9,25 +9,25 @@
 <script src="{% static 'todos/js/todo-list.js' %}"></script>
 {% endblock %}
 
-{% block title %}TODO List{% endblock %}
+{% block title %}{% trans "TODO List" %}{% endblock %}
 
 {% block content %}
-    <h1>My TODO List</h1>
+    <h1>{% trans "My TODO List" %}</h1>
 
     <div class="todo-header">
         <div class="todo-header-buttons">
             {% if perms.auth.can_modify_todos %}
-            <a href="{% url 'create_todo' %}" class="btn">Add New TODO</a>
-            <a href="{% url 'manage_categories' %}" class="btn btn-secondary">Manage Categories</a>
+            <a href="{% url 'create_todo' %}" class="btn">{% trans "Add New TODO" %}</a>
+            <a href="{% url 'manage_categories' %}" class="btn btn-secondary">{% trans "Manage Categories" %}</a>
             {% else %}
-            <span class="demo-notice" style="color: #666; font-style: italic;">Demo Mode - Limited Access</span>
+            <span class="demo-notice" style="color: #666; font-style: italic;">{% trans "Demo Mode - Limited Access" %}</span>
             {% endif %}
         </div>
         {% if view_mode != 'due_soon' %}
             <div class="todo-header-toggle">
                 <label class="toggle-label">
                     <input type="checkbox" id="show-completed-toggle" {% if show_completed == 'true' %}checked{% endif %} class="toggle-checkbox">
-                    <span class="toggle-text">Show Completed</span>
+                    <span class="toggle-text">{% trans "Show Completed" %}</span>
                 </label>
             </div>
         {% endif %}
@@ -37,10 +37,10 @@
     <div class="category-tabs-wrapper">
         <div class="category-tabs">
             <a href="?{% if show_completed == 'true' %}show_completed=true{% endif %}" class="category-tab {% if not selected_category and view_mode == 'default' %}active{% endif %}">
-                All TODOs
+                {% trans "All TODOs" %}
             </a>
             <a href="?view=due_soon" class="category-tab {% if view_mode == 'due_soon' %}active{% endif %}">
-                Due Soon
+                {% trans "Due Soon" %}
             </a>
             {% for category in categories %}
                 <a href="?category={{ category.id }}{% if show_completed == 'true' %}&show_completed=true{% endif %}" class="category-tab {% if selected_category == category.id|stringformat:'s' %}active{% endif %}">
@@ -68,12 +68,12 @@
                                 <p class="todo-description">{{ todo.description }}</p>
                             {% endif %}
                             <small class="todo-metadata">
-                                Created: {{ todo.created_at|date:"M d, Y H:i" }}
+                                {% trans "Created:" %} {{ todo.created_at|date:"M d, Y H:i" }}
                                 {% if todo.due_date %}
-                                    <br>Due: {{ todo.due_date|date:"M d, Y" }}{% if todo.due_date.hour > 0 or todo.due_date.minute > 0 %} at {{ todo.due_date|date:"g A" }}{% endif %}
+                                    <br>{% trans "Due:" %} {{ todo.due_date|date:"M d, Y" }}{% if todo.due_date.hour > 0 or todo.due_date.minute > 0 %} {% trans "at" %} {{ todo.due_date|date:"g A" }}{% endif %}
                                 {% endif %}
                                 {% if todo.completed_at %}
-                                    <br>Completed: {{ todo.completed_at|date:"M d, Y H:i" }}
+                                    <br>{% trans "Completed:" %} {{ todo.completed_at|date:"M d, Y H:i" }}
                                 {% endif %}
                             </small>
                             <div class="todo-effort" data-todo-id="{{ todo.id }}">
@@ -91,14 +91,14 @@
                                 <form method="post" action="{% url 'toggle_todo' todo.id %}" style="display: inline;">
                                     {% csrf_token %}
                                     <button type="submit" class="btn todo-action-button success">
-                                        Dunzo
+                                        {% trans "Dunzo" %}
                                     </button>
                                 </form>
                                 {% if perms.auth.can_modify_todos %}
                                 <form method="post" action="{% url 'complete_and_followup' todo.id %}" style="display: inline;">
                                     {% csrf_token %}
                                     <button type="submit" class="btn todo-action-button">
-                                        ✅ & Followup
+                                        ✅ & {% trans "Followup" %}
                                     </button>
                                 </form>
                                 {% endif %}
@@ -107,16 +107,16 @@
                             <form method="post" action="{% url 'toggle_todo' todo.id %}" style="display: inline;">
                                 {% csrf_token %}
                                 <button type="submit" class="btn btn-success todo-action-button">
-                                    Mark Incomplete
+                                    {% trans "Mark Incomplete" %}
                                 </button>
                             </form>
                         {% endif %}
                         {% if perms.auth.can_modify_todos %}
                         <div class="todo-links">
-                            <a href="{% url 'edit_todo' todo.id %}" class="todo-link">Edit</a>
+                            <a href="{% url 'edit_todo' todo.id %}" class="todo-link">{% trans "Edit" %}</a>
                             <form method="post" action="{% url 'delete_todo' todo.id %}" style="display: inline; margin: 0;">
                                 {% csrf_token %}
-                                <button type="submit" class="todo-delete-button delete-todo-btn">Delete</button>
+                                <button type="submit" class="todo-delete-button delete-todo-btn">{% trans "Delete" %}</button>
                             </form>
                         </div>
                         {% endif %}
@@ -125,6 +125,6 @@
             {% endfor %}
         </div>
     {% else %}
-        <p class="empty-state">No todos yet. Create your first one!</p>
+        <p class="empty-state">{% trans "No todos yet. Create your first one!" %}</p>
     {% endif %}
 {% endblock %}

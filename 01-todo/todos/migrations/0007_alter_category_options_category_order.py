@@ -4,19 +4,21 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('todos', '0006_todo_due_date'),
+        ("todos", "0006_todo_due_date"),
     ]
 
     operations = [
         migrations.AlterModelOptions(
-            name='category',
-            options={'ordering': ['order', 'name'], 'verbose_name_plural': 'Categories'},
+            name="category",
+            options={
+                "ordering": ["order", "name"],
+                "verbose_name_plural": "Categories",
+            },
         ),
         migrations.AddField(
-            model_name='category',
-            name='order',
+            model_name="category",
+            name="order",
             field=models.IntegerField(default=0),
         ),
     ]

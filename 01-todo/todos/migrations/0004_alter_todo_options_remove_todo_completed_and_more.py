@@ -4,23 +4,22 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('todos', '0003_alter_todo_options_category_todo_categories'),
+        ("todos", "0003_alter_todo_options_category_todo_categories"),
     ]
 
     operations = [
         migrations.AlterModelOptions(
-            name='todo',
-            options={'ordering': ['completed_at', '-created_at']},
+            name="todo",
+            options={"ordering": ["completed_at", "-created_at"]},
         ),
         migrations.RemoveField(
-            model_name='todo',
-            name='completed',
+            model_name="todo",
+            name="completed",
         ),
         migrations.AddField(
-            model_name='todo',
-            name='completed_at',
+            model_name="todo",
+            name="completed_at",
             field=models.DateTimeField(blank=True, null=True),
         ),
     ]

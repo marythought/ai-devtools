@@ -4,15 +4,14 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('todos', '0005_alter_todo_options'),
+        ("todos", "0005_alter_todo_options"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='todo',
-            name='due_date',
+            model_name="todo",
+            name="due_date",
             field=models.DateTimeField(blank=True, null=True),
         ),
     ]

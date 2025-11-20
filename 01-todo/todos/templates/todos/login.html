@@ -1,16 +1,17 @@
 {% extends 'todos/base.html' %}
+{% load i18n %}
 
-{% block title %}Login - TODO App{% endblock %}
+{% block title %}{% trans "Login" %} - {% trans "TODO App" %}{% endblock %}
 
 {% block content %}
-<h1>Login</h1>
+<h1>{% trans "Login" %}</h1>
 
 <form method="post" style="max-width: 400px;">
     {% csrf_token %}
 
     <div style="margin-bottom: 15px;">
         <label for="{{ form.username.id_for_label }}" style="display: block; margin-bottom: 5px; font-weight: bold;">
-            Username:
+            {% trans "Username:" %}
         </label>
         {{ form.username }}
         {% if form.username.errors %}
@@ -22,7 +23,7 @@
 
     <div style="margin-bottom: 15px;">
         <label for="{{ form.password.id_for_label }}" style="display: block; margin-bottom: 5px; font-weight: bold;">
-            Password:
+            {% trans "Password:" %}
         </label>
         {{ form.password }}
         {% if form.password.errors %}
@@ -32,18 +33,18 @@
         {% endif %}
     </div>
 
-    <button type="submit" class="btn">Login</button>
+    <button type="submit" class="btn">{% trans "Login" %}</button>
 </form>
 
 <div style="margin-top: 20px; padding: 15px; background-color: #f8f9fa; border: 1px solid #dee2e6; border-radius: 4px;">
-    <p style="margin: 0 0 10px 0; font-weight: 500;">Want to try it out first?</p>
+    <p style="margin: 0 0 10px 0; font-weight: 500;">{% trans "Want to try it out first?" %}</p>
     <a href="{% url 'demo_login' %}" class="btn" style="background-color: #6c757d; display: inline-block;">
-        Try Demo Mode (Read Only)
+        {% trans "Try Demo Mode (Read Only)" %}
     </a>
 </div>
 
 <p style="margin-top: 20px;">
-    Don't have an account? <a href="{% url 'register' %}" style="color: #007bff;">Register here</a>
+    {% trans "Don't have an account?" %} <a href="{% url 'register' %}" style="color: #007bff;">{% trans "Register here" %}</a>
 </p>
 
 <style>

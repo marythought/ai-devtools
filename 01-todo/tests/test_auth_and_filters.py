@@ -47,7 +47,9 @@ class AuthenticationAndUtilityTests(TestCase):
         self.assertEqual(resp.status_code, 302)
 
         # login with created user
-        resp = self.client.post(login_url, {"username": "tester", "password": "safepassword123"})
+        resp = self.client.post(
+            login_url, {"username": "tester", "password": "safepassword123"}
+        )
         self.assertIn(resp.status_code, (200, 302))
 
     def test_create_effort_sanitization(self):
@@ -55,14 +57,18 @@ class AuthenticationAndUtilityTests(TestCase):
         self.client.force_login(user)
 
         # create todo with bad effort -> should sanitize to 0
-        resp = self.client.post(reverse("create_todo"), {"title": "t1", "effort": "bad"})
+        resp = self.client.post(
+            reverse("create_todo"), {"title": "t1", "effort": "bad"}
+        )
         self.assertEqual(resp.status_code, 302)
         todo = Todo.objects.filter(title="t1", user=user).first()
         self.assertIsNotNone(todo)
         self.assertEqual(todo.effort, 0)
 
         # create another with high effort -> capped at 10
-        resp = self.client.post(reverse("create_todo"), {"title": "t2", "effort": "999"})
+        resp = self.client.post(
+            reverse("create_todo"), {"title": "t2", "effort": "999"}
+        )
         t2 = Todo.objects.filter(title="t2", user=user).first()
         self.assertIsNotNone(t2)
         self.assertEqual(t2.effort, 10)

@@ -32,19 +32,15 @@ jobs:
     - name: Install linting tools
       run: |
         python -m pip install --upgrade pip
-        pip install black flake8 isort
+        pip install ruff
 
-    - name: Run black
+    - name: Run ruff linter
       run: |
-        black --check .
+        ruff check .
 
-    - name: Run flake8
+    - name: Run ruff formatter
       run: |
-        flake8 .
-
-    - name: Run isort
-      run: |
-        isort --check-only .
+        ruff format --check .
 
   test:
     runs-on: ubuntu-latest

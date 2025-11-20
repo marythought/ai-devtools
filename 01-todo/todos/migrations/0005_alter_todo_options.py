@@ -4,14 +4,20 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('todos', '0004_alter_todo_options_remove_todo_completed_and_more'),
+        ("todos", "0004_alter_todo_options_remove_todo_completed_and_more"),
     ]
 
     operations = [
         migrations.AlterModelOptions(
-            name='todo',
-            options={'ordering': [models.Case(models.When(completed_at__isnull=True, then=0), default=1), '-created_at']},
+            name="todo",
+            options={
+                "ordering": [
+                    models.Case(
+                        models.When(completed_at__isnull=True, then=0), default=1
+                    ),
+                    "-created_at",
+                ]
+            },
         ),
     ]

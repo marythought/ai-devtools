@@ -126,5 +126,7 @@ class TodoViewsAndReorderingTests(TestCase):
         self.assertFalse(User.objects.filter(username="x").exists())
 
         # invalid login
-        resp = self.client.post(reverse("login"), {"username": "noone", "password": "bad"})
+        resp = self.client.post(
+            reverse("login"), {"username": "noone", "password": "bad"}
+        )
         self.assertEqual(resp.status_code, 200)
