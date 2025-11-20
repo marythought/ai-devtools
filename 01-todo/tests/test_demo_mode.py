@@ -124,14 +124,19 @@ class DemoModeViewRestrictionTests(TestCase):
         # Todo should not be created
         self.assertEqual(Todo.objects.filter(title="Test Todo").count(), 0)
 
-    def test_demo_user_cannot_toggle_todo(self):
-        """Test that demo user cannot toggle todos."""
+    def test_demo_user_can_toggle_todo(self):
+        """Test that demo user CAN toggle todos (mark complete/incomplete)."""
         todo = Todo.objects.create(title="Test Todo", user=self.demo_user)
+        self.assertIsNone(todo.completed_at)
 
         response = self.client.post(reverse("toggle_todo", args=[todo.id]))
 
-        # Should get permission denied
-        self.assertEqual(response.status_code, 403)
+        # Should redirect (success)
+        self.assertEqual(response.status_code, 302)
+
+        # Todo should be toggled
+        todo.refresh_from_db()
+        self.assertIsNotNone(todo.completed_at)
 
     def test_demo_user_cannot_edit_todo(self):
         """Test that demo user cannot edit todos."""
@@ -171,8 +176,8 @@ class DemoModeViewRestrictionTests(TestCase):
         # Todo should still exist
         self.assertTrue(Todo.objects.filter(id=todo_id).exists())
 
-    def test_demo_user_cannot_reorder_todos(self):
-        """Test that demo user cannot reorder todos."""
+    def test_demo_user_can_reorder_todos(self):
+        """Test that demo user CAN reorder todos."""
         todo1 = Todo.objects.create(title="Todo 1", user=self.demo_user, order=0)
         todo2 = Todo.objects.create(title="Todo 2", user=self.demo_user, order=1)
 
@@ -182,8 +187,14 @@ class DemoModeViewRestrictionTests(TestCase):
             content_type="application/json",
         )
 
-        # Should get permission denied
-        self.assertEqual(response.status_code, 403)
+        # Should succeed
+        self.assertEqual(response.status_code, 200)
+
+        # Verify order was updated
+        todo1.refresh_from_db()
+        todo2.refresh_from_db()
+        self.assertEqual(todo2.order, 0)
+        self.assertEqual(todo1.order, 1)
 
     def test_demo_user_cannot_create_category(self):
         """Test that demo user cannot create categories."""
@@ -215,8 +226,8 @@ class DemoModeViewRestrictionTests(TestCase):
         # Category should still exist
         self.assertTrue(Category.objects.filter(id=category_id).exists())
 
-    def test_demo_user_cannot_reorder_categories(self):
-        """Test that demo user cannot reorder categories."""
+    def test_demo_user_can_reorder_categories(self):
+        """Test that demo user CAN reorder categories."""
         cat1 = Category.objects.create(name="Cat 1", user=self.demo_user, order=0)
         cat2 = Category.objects.create(name="Cat 2", user=self.demo_user, order=1)
 
@@ -226,8 +237,14 @@ class DemoModeViewRestrictionTests(TestCase):
             content_type="application/json",
         )
 
-        # Should get permission denied
-        self.assertEqual(response.status_code, 403)
+        # Should succeed
+        self.assertEqual(response.status_code, 200)
+
+        # Verify order was updated
+        cat1.refresh_from_db()
+        cat2.refresh_from_db()
+        self.assertEqual(cat2.order, 0)
+        self.assertEqual(cat1.order, 1)
 
     def test_regular_user_can_create_todo(self):
         """Test that regular users can still create todos."""

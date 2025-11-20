@@ -7,7 +7,7 @@
 
     {% if not perms.auth.can_modify_todos %}
         <div style="padding: 15px; background-color: #fff3cd; border: 1px solid #ffc107; border-radius: 4px; margin-top: 20px;">
-            <p style="margin: 0; color: #856404;"><strong>Demo Mode:</strong> You do not have permission to create todos. This is a read-only demo account.</p>
+            <p style="margin: 0; color: #856404;"><strong>Demo Mode:</strong> You cannot create new todos. You can mark existing todos complete/incomplete and reorder them.</p>
             <a href="{% url 'todo_list' %}" class="btn" style="margin-top: 10px; display: inline-block;">Back to Todo List</a>
         </div>
     {% else %}

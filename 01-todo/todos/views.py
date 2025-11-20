@@ -131,7 +131,6 @@ def create_todo(request):
 
 
 @login_required
-@permission_required_to_modify
 def toggle_todo(request, todo_id):
     todo = get_object_or_404(Todo, id=todo_id, user=request.user)
     if todo.completed_at:
@@ -232,7 +231,6 @@ def handle_reorder_request(request, id_key, queryset_filter):
 
 
 @login_required
-@permission_required_to_modify
 def reorder_todos(request):
     if request.method == "POST":
         import json
@@ -300,7 +298,6 @@ def delete_category(request, category_id):
 
 
 @login_required
-@permission_required_to_modify
 def reorder_categories(request):
     return handle_reorder_request(
         request,

@@ -54,8 +54,9 @@ def demo_login(request):
         login(request, demo_user, backend="django.contrib.auth.backends.ModelBackend")
         messages.info(
             request,
-            "Welcome to Demo Mode! You have read-only access. "
-            "You can view all features but cannot create, edit, or delete items.",
+            "Welcome to Demo Mode!"
+            "You can view todos, mark them complete/incomplete, and reorder items. "
+            "However, you cannot create, edit, or delete items.",
         )
         return redirect("todo_list")
     except User.DoesNotExist:
