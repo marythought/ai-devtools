@@ -73,3 +73,6 @@ coverage-html:
 
 coverage-clean:
 	@rm -rf htmlcov .coverage || true
+
+ssh:
+	@ssh -i ../pythonanywhere_deploy_key marythought@ssh.pythonanywhere.com
