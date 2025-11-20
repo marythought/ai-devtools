@@ -1,6 +1,6 @@
 # Django TODO Application
 
-A full-stack TODO application built with Django featuring user authentication, category management and CRUD operations.
+A full-stack TODO application built with Django featuring user authentication, category management and CRUD operations. It contains a demo account and features CI/CD setup and internationalization.
 
 [![CI Status](https://github.com/marythought/ai-devtools/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/marythought/ai-devtools/actions/workflows/ci.yml)
 

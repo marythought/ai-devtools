@@ -11,6 +11,7 @@ This command:
 from django.contrib.auth.models import User
 from django.core.management.base import BaseCommand
 from django.utils import timezone
+
 from todos.models import Category, Todo
 from todos.permissions import CAN_MODIFY_TODOS
 

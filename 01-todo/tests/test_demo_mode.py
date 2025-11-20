@@ -11,6 +11,7 @@ This module covers:
 from django.contrib.auth.models import User
 from django.test import TestCase
 from django.urls import reverse
+
 from todos.models import Category, Todo
 from todos.permissions import user_can_modify_todos
 

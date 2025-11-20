@@ -1,6 +1,7 @@
 from django.contrib.auth.models import User
 from django.test import TestCase
 from django.urls import reverse
+
 from todos.models import Todo
 from todos.templatetags.repeat_tags import repeat
 from todos.views import parse_due_date
