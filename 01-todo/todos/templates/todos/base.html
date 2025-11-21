@@ -95,6 +95,26 @@
             color: #0c5460;
             border: 1px solid #bee5eb;
         }
+        .footer {
+            margin-top: 40px;
+            padding-top: 20px;
+            border-top: 1px solid #e0e0e0;
+            text-align: center;
+            font-size: 14px;
+        }
+        .footer-links {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            flex-wrap: wrap;
+        }
+        .footer-links a {
+            color: #007bff;
+            text-decoration: none;
+        }
+        .footer-links a:hover {
+            text-decoration: underline;
+        }
     </style>
 </head>
 <body>
@@ -134,6 +154,14 @@
         {% endif %}
 
         {% block content %}{% endblock %}
+
+        <div class="footer">
+            <div class="footer-links">
+                <a href="{% url 'about_site' %}">{% trans "About this Site" %}</a>
+                <span style="color: #ccc;">|</span>
+                <a href="{% url 'about_spoons' %}">{% trans "What's with the spoons?" %}</a>
+            </div>
+        </div>
     </div>
     {% block extra_js %}{% endblock %}
 </body>

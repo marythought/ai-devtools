@@ -1,0 +1,48 @@
+{% extends 'todos/base.html' %}
+{% load i18n %}
+
+{% block title %}{% trans "About this Site" %} - {% trans "TODO App" %}{% endblock %}
+
+{% block content %}
+<h1>{% trans "About this Site" %}</h1>
+
+<div style="line-height: 1.6;">
+    <h2>
+        Hi! I'm Mary, creator of this TODO app.
+    </h2>
+    <ul>
+        <li>I am a human software developer engineer, available for work.</li>
+        <li>I live in Seattle, WA with my spouse (Josh), two kids and a doodle.</li>
+        <li>I am a lifelong knowledge seeker and enjoy "learning out loud" through projects like this one.</li>
+        <li>You can find me on <a href="https://www.linkedin.com/in/mcdickson/">LinkedIn</a>, <a href="https://github.com/marythought">Github</a>, and <a href="https://bsky.app/profile/marythought.bsky.social">Bluesky</a>.</li>
+        <li>Feel free to reach out with any questions or feedback!</li>
+    </ul>
+
+    <h2 style="margin-top: 25px; font-size: 1.3em;">App Features</h2>
+    <p>
+        This TODO application helps you organize and manage your tasks efficiently.
+    </p>
+    <ul>
+        <li>Create, edit, order and delete TODO items</li>
+        <li>Organize tasks with categories</li>
+        <li>Set due dates and effort levels</li>
+        <li>Track completion status</li>
+        <li>Drag-and-drop reordering</li>
+        <li>Multi-language support (English & Spanish)</li>
+        <li>Read-only demo mode</li>
+    </ul>
+
+    <h2 style="margin-top: 25px; font-size: 1.3em;">Technology Stack</h2>
+    <ul>
+        <li>Process: Built in a few hours with assistance from Claude Code. You can view the source code on <a href="https://github.com/marythought/ai-devtools/tree/main/01-todo">Github</a>.</li>
+        <li>Backend: Django (Python)</li>
+        <li>Frontend: HTML, CSS, JavaScript</li>
+        <li>Database: SQLite</li>
+        <li>DevOps: CI/CD support via Github Actions and Python Anywhere</li>
+    </ul>
+</div>
+
+<div style="margin-top: 30px;">
+    <a href="{% url 'todo_list' %}" class="btn">{% trans "Back to TODO List" %}</a>
+</div>
+{% endblock %}
