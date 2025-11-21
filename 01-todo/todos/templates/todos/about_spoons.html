@@ -1,0 +1,39 @@
+{% extends 'todos/base.html' %}
+{% load i18n %}
+
+{% block title %}{% trans "What's with the spoons?" %} - {% trans "TODO App" %}{% endblock %}
+
+{% block content %}
+<h1>{% trans "What's with the spoons?" %}</h1>
+
+<div style="line-height: 1.6;">
+    <p>
+        You may have noticed the spoon pattern background throughout this site.
+        Here's the story behind it...
+    </p>
+
+    <p style="margin-top: 20px;">
+        <strong>The Spoon Theory</strong>
+    </p>
+    <p>
+        Coined by Christine Miserandino to explain her experience living with a chronic illness,
+        "Spoon Theory" is a metaphor used to describe the amount
+        of mental or physical energy a person has available for daily activities.
+        Each spoon represents a unit of energy, and when you're out of spoons, you're out of energy.
+    </p>
+
+    <p style="margin-top: 20px;">
+        In the context of a TODO app, it's a reminder that:
+    </p>
+    <ul>
+        <li>Every task requires physical, mental, and/or emotional energy (spoons)</li>
+        <li>We all have limited resources each day</li>
+        <li>It's important to prioritize what matters most</li>
+        <li>Taking care of yourself is essential</li>
+    </ul>
+</div>
+
+<div style="margin-top: 30px;">
+    <a href="{% url 'todo_list' %}" class="btn">{% trans "Back to TODO List" %}</a>
+</div>
+{% endblock %}

@@ -325,3 +325,13 @@ def reorder_categories(request):
         "category_ids",
         lambda cat_id: Category.objects.filter(id=cat_id, user=request.user),
     )
+
+
+def about_site(request):
+    """View for the About this Site page."""
+    return render(request, "todos/about_site.html")
+
+
+def about_spoons(request):
+    """View for the What's with the spoons? page."""
+    return render(request, "todos/about_spoons.html")

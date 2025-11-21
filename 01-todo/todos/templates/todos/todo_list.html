@@ -12,8 +12,6 @@
 {% block title %}{% trans "TODO List" %}{% endblock %}
 
 {% block content %}
-    <h1>{% trans "My TODO List" %}</h1>
-
     <div class="todo-header">
         <div class="todo-header-buttons">
             {% if perms.auth.can_modify_todos %}

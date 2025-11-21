@@ -25,4 +25,6 @@ urlpatterns = [
     path("login/", auth_views.login_view, name="login"),
     path("logout/", auth_views.logout_view, name="logout"),
     path("demo/", auth_views.demo_login, name="demo_login"),
+    path("about-site/", views.about_site, name="about_site"),
+    path("about-spoons/", views.about_spoons, name="about_spoons"),
 ]

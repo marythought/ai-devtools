@@ -1,0 +1,97 @@
+/* Login page specific styles with spoon pattern background */
+
+body.login-page {
+    background-image: url('../images/spoon-clip-art-backgrounds-textures-838a1a.jpg');
+    background-repeat: repeat;
+    background-size: auto;
+    background-attachment: fixed;
+    min-height: 100vh;
+}
+
+/* Enhance the login form container for better visibility on the pattern */
+.login-container {
+    background-color: rgba(255, 255, 255, 0.95);
+    padding: 2.5rem;
+    border-radius: 10px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+    max-width: 400px;
+    margin: 50px auto;
+}
+
+/* Style adjustments for form elements on patterned background */
+.login-container h2 {
+    margin-top: 0;
+    margin-bottom: 1.5rem;
+    text-align: center;
+    color: #333;
+}
+
+.login-container form {
+    margin-bottom: 1.5rem;
+}
+
+.login-container input[type="text"],
+.login-container input[type="password"] {
+    width: 100%;
+    padding: 10px;
+    margin-bottom: 15px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    box-sizing: border-box;
+    font-size: 14px;
+}
+
+.login-container input[type="text"]:focus,
+.login-container input[type="password"]:focus {
+    outline: none;
+    border-color: #007bff;
+    box-shadow: 0 0 0 2px rgba(0, 123, 255, 0.1);
+}
+
+.login-container button[type="submit"] {
+    width: 100%;
+    padding: 10px;
+    background-color: #007bff;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    font-size: 16px;
+    cursor: pointer;
+    transition: background-color 0.2s;
+}
+
+.login-container button[type="submit"]:hover {
+    background-color: #0056b3;
+}
+
+.login-container .demo-mode {
+    text-align: center;
+    margin-top: 1rem;
+}
+
+.login-container .register-link {
+    text-align: center;
+    margin-top: 1rem;
+}
+
+.login-container .register-link a {
+    color: #007bff;
+    text-decoration: none;
+}
+
+.login-container .register-link a:hover {
+    text-decoration: underline;
+}
+
+/* Ensure messages display well on the patterned background */
+.login-page .messages {
+    max-width: 400px;
+    margin: 20px auto;
+}
+
+.login-page .messages .alert {
+    background-color: rgba(255, 255, 255, 0.95);
+    padding: 12px;
+    border-radius: 4px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}

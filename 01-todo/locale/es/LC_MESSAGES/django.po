@@ -256,10 +256,6 @@ msgstr "Inicia sesión aquí"
 msgid "TODO List"
 msgstr "Lista de TODO"
 
-#: todos/templates/todos/todo_list.html:15
-msgid "My TODO List"
-msgstr "Mi Lista de TODO"
-
 #: todos/templates/todos/todo_list.html:20
 msgid "Add New TODO"
 msgstr "Agregar Nuevo TODO"
