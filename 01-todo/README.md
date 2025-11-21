@@ -35,26 +35,74 @@ After the server starts, open browser to:
 http://127.0.0.1:8000/
 ```
 
+## Running Tests
+
+This project uses **pytest** for testing with Django integration.
+
+### Quick Start
+```bash
+# Run all tests
+make test
+
+# Or directly with pytest
+. .venv/bin/activate && pytest
+```
+
+### Test Commands
+
+```bash
+# Run all tests with verbose output
+. .venv/bin/activate && pytest -v
+
+# Run a specific test file
+. .venv/bin/activate && pytest tests/test_meta_pages.py
+
+# Run a specific test class
+. .venv/bin/activate && pytest tests/test_meta_pages.py::AboutSiteViewTests
+
+# Run a specific test
+. .venv/bin/activate && pytest tests/test_meta_pages.py::AboutSiteViewTests::test_about_site_page_loads
+```
+
+### Code Coverage
+
+Development dependencies for coverage are listed in `requirements-dev.txt`.
+
+```bash
+# Install coverage dependencies
+. .venv/bin/activate
+make coverage-install
+
+# Run tests with coverage report
+make coverage
+
+# Or directly with pytest
+. .venv/bin/activate && pytest --cov=. --cov-report=term-missing
+
+# Generate HTML coverage report
+make coverage-html
+# Then open htmlcov/index.html in your browser
+```
+
+### Test Configuration
+
+Tests are configured in `pyproject.toml`:
+- Test framework: **pytest** with pytest-django plugin
+- Test location: `tests/` directory
+- Coverage target: 90%+ (currently ~97%)
+- All tests use Django's test database (auto-created and destroyed)
+
+### Writing Tests
+
+Test files should:
+- Be located in the `tests/` directory
+- Follow naming convention: `test_*.py`
+- Use Django TestCase or pytest fixtures
+- See existing tests for examples
+
 Scripts and Makefile
 - Helper scripts are stored in the `scripts/` folder (`scripts/run-local.sh`).
 - Use the top-level `Makefile` in this directory for common tasks: `make venv`, `make install`, `make migrate`, `make collectstatic`, `make createsuperuser`, `make run`, `make test`.
-
-Code Coverage
-- Development dependencies for coverage are listed in `requirements-dev.txt`.
-- Install them into your virtualenv:
-   ```bash
-   . .venv/bin/activate
-   make coverage-install
-   ```
-- Run tests with coverage and show a report:
-   ```bash
-   make coverage
-   ```
-- Generate an HTML coverage report:
-   ```bash
-   make coverage-html
-   # open htmlcov/index.html in your browser
-   ```
 
 ## Deploying
 
