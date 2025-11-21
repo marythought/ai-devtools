@@ -211,3 +211,120 @@
     font-size: 14px;
     color: inherit;
 }
+
+/* Mobile Responsive Styles */
+@media (max-width: 768px) {
+    /* Header Section */
+    .todo-header {
+        flex-direction: column;
+        gap: 15px;
+        align-items: stretch;
+    }
+
+    .todo-header-buttons {
+        flex-direction: column;
+        width: 100%;
+    }
+
+    .todo-header-buttons .btn {
+        width: 100%;
+    }
+
+    .todo-header-toggle {
+        justify-content: center;
+    }
+
+    /* Category Tabs */
+    .category-tabs {
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+        flex-wrap: nowrap;
+        padding-bottom: 5px;
+    }
+
+    .category-tab {
+        flex-shrink: 0;
+        padding: 10px 15px;
+        font-size: 14px;
+        white-space: nowrap;
+    }
+
+    /* Todo Item */
+    .todo-item {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 15px;
+        padding: 12px;
+    }
+
+    .todo-content {
+        flex-direction: column;
+    }
+
+    .drag-handle,
+    .drag-handle-placeholder {
+        display: none;
+    }
+
+    .todo-title {
+        font-size: 16px;
+    }
+
+    .todo-description {
+        font-size: 14px;
+    }
+
+    .todo-metadata {
+        font-size: 12px;
+    }
+
+    /* Todo Actions */
+    .todo-actions {
+        width: 100%;
+        align-items: stretch;
+    }
+
+    .todo-action-buttons {
+        flex-direction: column;
+        width: 100%;
+    }
+
+    .todo-action-button {
+        width: 100%;
+        padding: 10px 16px;
+        font-size: 14px;
+    }
+
+    .todo-links {
+        justify-content: space-between;
+        width: 100%;
+    }
+
+    .demo-notice {
+        text-align: center;
+        display: block;
+    }
+}
+
+@media (max-width: 480px) {
+    .category-tab {
+        padding: 8px 12px;
+        font-size: 13px;
+    }
+
+    .todo-item {
+        padding: 10px;
+    }
+
+    .todo-title {
+        font-size: 15px;
+    }
+
+    .todo-metadata {
+        font-size: 11px;
+    }
+
+    .effort-display {
+        font-size: 12px;
+    }
+}
