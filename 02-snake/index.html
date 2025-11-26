@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Multiplayer Snake Game</title>
+    <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+    <!-- Login/Signup Screen -->
+    <div id="auth-screen" class="screen active">
+        <div class="auth-container">
+            <h1>🐍 Multiplayer Snake</h1>
+            <div id="login-form" class="auth-form">
+                <h2>Login</h2>
+                <input type="text" id="login-username" placeholder="Username" autocomplete="username">
+                <input type="password" id="login-password" placeholder="Password" autocomplete="current-password">
+                <button id="login-btn" class="btn btn-primary">Login</button>
+                <p class="switch-auth">Don't have an account? <a href="#" id="show-signup">Sign up</a></p>
+            </div>
+            <div id="signup-form" class="auth-form hidden">
+                <h2>Sign Up</h2>
+                <input type="text" id="signup-username" placeholder="Username" autocomplete="username">
+                <input type="password" id="signup-password" placeholder="Password" autocomplete="new-password">
+                <input type="password" id="signup-confirm" placeholder="Confirm Password" autocomplete="new-password">
+                <button id="signup-btn" class="btn btn-primary">Sign Up</button>
+                <p class="switch-auth">Already have an account? <a href="#" id="show-login">Login</a></p>
+            </div>
+            <div class="error-message" id="auth-error"></div>
+        </div>
+    </div>
+
+    <!-- Main Game Screen -->
+    <div id="game-screen" class="screen">
+        <nav class="navbar">
+            <div class="nav-left">
+                <h1>🐍 Snake Game</h1>
+            </div>
+            <div class="nav-right">
+                <span id="user-display" class="user-info"></span>
+                <button id="logout-btn" class="btn btn-secondary">Logout</button>
+            </div>
+        </nav>
+
+        <div class="main-container">
+            <!-- Left Sidebar: Game Controls -->
+            <aside class="sidebar left">
+                <div class="game-controls">
+                    <h3>Game Mode</h3>
+                    <div class="mode-selector">
+                        <label class="radio-label">
+                            <input type="radio" name="mode" value="pass-through">
+                            <span>Pass Through Walls</span>
+                        </label>
+                        <label class="radio-label">
+                            <input type="radio" name="mode" value="walls" checked>
+                            <span>Walls (Classic)</span>
+                        </label>
+                    </div>
+
+                    <div class="game-info">
+                        <div class="info-item">
+                            <span class="label">Score:</span>
+                            <span id="current-score" class="value">0</span>
+                        </div>
+                        <div class="info-item">
+                            <span class="label">High Score:</span>
+                            <span id="high-score" class="value">0</span>
+                        </div>
+                        <div class="info-item">
+                            <span class="label">Speed:</span>
+                            <span id="game-speed" class="value">Normal</span>
+                        </div>
+                    </div>
+
+                    <div class="game-buttons">
+                        <button id="start-btn" class="btn btn-success">Start Game</button>
+                        <button id="pause-btn" class="btn btn-warning" disabled>Pause</button>
+                        <button id="reset-btn" class="btn btn-danger">Reset</button>
+                    </div>
+
+                    <div class="controls-info">
+                        <h4>Controls</h4>
+                        <ul>
+                            <li>↑ - Move Up</li>
+                            <li>↓ - Move Down</li>
+                            <li>← - Move Left</li>
+                            <li>→ - Move Right</li>
+                            <li>Space - Pause/Resume</li>
+                        </ul>
+                    </div>
+                </div>
+            </aside>
+
+            <!-- Center: Game Canvas -->
+            <main class="game-area">
+                <div class="canvas-container">
+                    <canvas id="game-canvas" width="600" height="600"></canvas>
+                    <div id="game-over-overlay" class="overlay hidden">
+                        <div class="overlay-content">
+                            <h2>Game Over!</h2>
+                            <p>Score: <span id="final-score">0</span></p>
+                            <button id="play-again-btn" class="btn btn-primary">Play Again</button>
+                        </div>
+                    </div>
+                </div>
+            </main>
+
+            <!-- Right Sidebar: Leaderboard & Spectator -->
+            <aside class="sidebar right">
+                <!-- Tab Navigation -->
+                <div class="tab-nav">
+                    <button class="tab-btn active" data-tab="leaderboard">Leaderboard</button>
+                    <button class="tab-btn" data-tab="spectate">Watch Players</button>
+                </div>
+
+                <!-- Leaderboard Tab -->
+                <div id="leaderboard-tab" class="tab-content active">
+                    <div class="leaderboard">
+                        <h3>Top Players</h3>
+                        <div id="leaderboard-list" class="leaderboard-list">
+                            <!-- Populated by JS -->
+                        </div>
+                        <button id="refresh-leaderboard" class="btn btn-secondary btn-sm">Refresh</button>
+                    </div>
+                </div>
+
+                <!-- Spectate Tab -->
+                <div id="spectate-tab" class="tab-content">
+                    <div class="spectate-section">
+                        <h3>Active Players</h3>
+                        <div id="active-players-list" class="players-list">
+                            <!-- Populated by JS -->
+                        </div>
+                    </div>
+                    <div class="spectate-canvas-container">
+                        <canvas id="spectate-canvas" width="300" height="300"></canvas>
+                        <div id="spectate-info" class="spectate-info hidden">
+                            <p><strong id="spectate-username">Player</strong></p>
+                            <p>Score: <span id="spectate-score">0</span></p>
+                        </div>
+                    </div>
+                </div>
+            </aside>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script type="module" src="js/main.js"></script>
+</body>
+</html>
