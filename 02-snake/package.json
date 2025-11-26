@@ -4,17 +4,28 @@
   "description": "Multiplayer Snake Game with spectator mode",
   "type": "module",
   "scripts": {
-    "test": "NODE_OPTIONS=--experimental-vm-modules jest --coverage",
-    "test:watch": "NODE_OPTIONS=--experimental-vm-modules jest --watch",
-    "test:main": "NODE_OPTIONS=--experimental-vm-modules jest tests/main.test.js",
+    "build": "tsc",
+    "build:watch": "tsc --watch",
+    "test": "jest --coverage",
+    "test:watch": "jest --watch",
+    "test:main": "jest tests/main.test.ts",
     "serve": "python3 -m http.server 8000"
   },
-  "keywords": ["snake", "game", "multiplayer"],
+  "keywords": [
+    "snake",
+    "game",
+    "multiplayer"
+  ],
   "author": "Mary Dickson",
   "license": "MIT",
   "devDependencies": {
     "@jest/globals": "^29.7.0",
+    "@types/jest": "^29.5.0",
+    "@types/node": "^20.0.0",
     "jest": "^29.7.0",
-    "jest-environment-jsdom": "^29.7.0"
+    "jest-canvas-mock": "^2.5.2",
+    "jest-environment-jsdom": "^29.7.0",
+    "ts-jest": "^29.1.0",
+    "typescript": "^5.3.0"
   }
 }

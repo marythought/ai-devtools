@@ -3,7 +3,43 @@
  * All backend calls are centralized here for easy migration to real backend
  */
 
+// Type Definitions
+export interface User {
+    username: string;
+    password: string;
+    highScore: number;
+}
+
+export interface UserProfile {
+    username: string;
+    highScore: number;
+}
+
+export interface LeaderboardEntry {
+    username: string;
+    score: number;
+}
+
+export interface ActivePlayer {
+    username: string;
+    score: number;
+    playing: boolean;
+}
+
+export interface GameState {
+    username: string;
+    score: number;
+    playing: boolean;
+}
+
+type UsersMap = Record<string, User>;
+
 export class MockAPI {
+    private users: UsersMap;
+    private currentUser: UserProfile | null;
+    private leaderboard: LeaderboardEntry[];
+    private activePlayers: ActivePlayer[];
+
     constructor() {
         this.users = this.loadUsers();
         this.currentUser = this.loadCurrentUser();
@@ -13,21 +49,21 @@ export class MockAPI {
     }
 
     // Local Storage Management
-    loadUsers() {
+    private loadUsers(): UsersMap {
         const users = localStorage.getItem('snake_users');
         return users ? JSON.parse(users) : {};
     }
 
-    saveUsers() {
+    private saveUsers(): void {
         localStorage.setItem('snake_users', JSON.stringify(this.users));
     }
 
-    loadCurrentUser() {
+    private loadCurrentUser(): UserProfile | null {
         const user = localStorage.getItem('snake_current_user');
         return user ? JSON.parse(user) : null;
     }
 
-    saveCurrentUser(user) {
+    private saveCurrentUser(user: UserProfile | null): void {
         if (user) {
             localStorage.setItem('snake_current_user', JSON.stringify(user));
         } else {
@@ -36,17 +72,17 @@ export class MockAPI {
         this.currentUser = user;
     }
 
-    loadLeaderboard() {
+    private loadLeaderboard(): LeaderboardEntry[] {
         const leaderboard = localStorage.getItem('snake_leaderboard');
         return leaderboard ? JSON.parse(leaderboard) : [];
     }
 
-    saveLeaderboard() {
+    private saveLeaderboard(): void {
         localStorage.setItem('snake_leaderboard', JSON.stringify(this.leaderboard));
     }
 
     // Initialize Mock Data
-    initializeMockData() {
+    private initializeMockData(): void {
         // Add some mock users if none exist
         if (Object.keys(this.users).length === 0) {
             this.users = {
@@ -76,7 +112,7 @@ export class MockAPI {
     }
 
     // Authentication Methods
-    async login(username, password) {
+    async login(username: string, password: string): Promise<UserProfile> {
         // Simulate network delay
         await this.delay(500);
 
@@ -88,7 +124,7 @@ export class MockAPI {
             throw new Error('Invalid password');
         }
 
-        const userProfile = {
+        const userProfile: UserProfile = {
             username: user.username,
             highScore: user.highScore || 0
         };
@@ -96,7 +132,7 @@ export class MockAPI {
         return userProfile;
     }
 
-    async signup(username, password) {
+    async signup(username: string, password: string): Promise<UserProfile> {
         // Simulate network delay
         await this.delay(500);
 
@@ -112,7 +148,7 @@ export class MockAPI {
             throw new Error('Password must be at least 6 characters');
         }
 
-        const newUser = {
+        const newUser: User = {
             username,
             password,
             highScore: 0
@@ -121,7 +157,7 @@ export class MockAPI {
         this.users[username] = newUser;
         this.saveUsers();
 
-        const userProfile = {
+        const userProfile: UserProfile = {
             username: newUser.username,
             highScore: newUser.highScore
         };
@@ -129,23 +165,23 @@ export class MockAPI {
         return userProfile;
     }
 
-    async logout() {
+    async logout(): Promise<boolean> {
         await this.delay(200);
         this.saveCurrentUser(null);
         return true;
     }
 
-    getCurrentUser() {
+    getCurrentUser(): UserProfile | null {
         return this.currentUser;
     }
 
     // Leaderboard Methods
-    async getLeaderboard() {
+    async getLeaderboard(): Promise<LeaderboardEntry[]> {
         await this.delay(300);
         return [...this.leaderboard].slice(0, 10); // Top 10
     }
 
-    async updateScore(username, score) {
+    async updateScore(username: string, score: number): Promise<boolean> {
         await this.delay(200);
 
         // Update user's high score if this is better
@@ -179,7 +215,7 @@ export class MockAPI {
     }
 
     // Active Players / Spectator Methods
-    async getActivePlayers() {
+    async getActivePlayers(): Promise<ActivePlayer[]> {
         await this.delay(200);
         // Filter out current user
         return this.activePlayers.filter(p =>
@@ -187,7 +223,7 @@ export class MockAPI {
         );
     }
 
-    async getPlayerGameState(username) {
+    async getPlayerGameState(username: string): Promise<GameState> {
         await this.delay(100);
         const player = this.activePlayers.find(p => p.username === username);
         if (!player) {
@@ -203,7 +239,7 @@ export class MockAPI {
     }
 
     // Simulate other players' scores changing
-    simulateActivePlayers() {
+    simulateActivePlayers(): void {
         setInterval(() => {
             this.activePlayers.forEach(player => {
                 if (player.playing && Math.random() > 0.3) {
@@ -221,7 +257,7 @@ export class MockAPI {
     }
 
     // Utility
-    delay(ms) {
+    private delay(ms: number): Promise<void> {
         return new Promise(resolve => setTimeout(resolve, ms));
     }
 }

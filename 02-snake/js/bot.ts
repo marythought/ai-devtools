@@ -3,10 +3,54 @@
  * Uses simple pathfinding to move towards food
  */
 
+import { Position, GameColors } from './snake.js';
+
+// Type Definitions
+export interface BotConfig {
+    gridSize?: number;
+    mode?: 'pass-through' | 'walls';
+    speed?: number;
+}
+
+interface DirectionChoice {
+    direction: Position;
+    distance: number;
+    wouldCollide: boolean;
+}
+
+export interface BotState {
+    snake: Position[];
+    food: Position;
+    score: number;
+    isRunning: boolean;
+}
+
 export class BotPlayer {
-    constructor(canvas, config = {}) {
+    private canvas: HTMLCanvasElement;
+    private ctx: CanvasRenderingContext2D;
+    private gridSize: number;
+    private width: number;
+    private height: number;
+    private cols: number;
+    private rows: number;
+
+    private snake: Position[];
+    private direction: Position;
+    private food: Position | null;
+    private score: number;
+    public isRunning: boolean;
+    private mode: 'pass-through' | 'walls';
+    private speed: number;
+    private gameLoop: NodeJS.Timeout | null;
+    private colors: GameColors;
+
+    constructor(canvas: HTMLCanvasElement, config: BotConfig = {}) {
         this.canvas = canvas;
-        this.ctx = canvas.getContext('2d');
+        const ctx = canvas.getContext('2d');
+        if (!ctx) {
+            throw new Error('Could not get 2D context from canvas');
+        }
+        this.ctx = ctx;
         this.gridSize = config.gridSize || 10;
         this.width = canvas.width;
         this.height = canvas.height;
@@ -32,7 +76,7 @@ export class BotPlayer {
         this.init();
     }
 
-    init() {
+    private init(): void {
         const centerX = Math.floor(this.cols / 2);
         const centerY = Math.floor(this.rows / 2);
         this.snake = [
@@ -46,13 +90,13 @@ export class BotPlayer {
         this.draw();
     }
 
-    start() {
+    start(): void {
         if (this.isRunning) return;
         this.isRunning = true;
         this.gameLoop = setInterval(() => this.update(), this.speed);
     }
 
-    stop() {
+    stop(): void {
         this.isRunning = false;
         if (this.gameLoop) {
             clearInterval(this.gameLoop);
@@ -60,18 +104,18 @@ export class BotPlayer {
         }
     }
 
-    reset() {
+    reset(): void {
         this.stop();
         this.init();
     }
 
-    update() {
+    private update(): void {
         if (!this.isRunning) return;
 
         // AI decision: move towards food
         this.makeAIDecision();
 
-        const head = { ...this.snake[0] };
+        const head: Position = { ...this.snake[0] };
         head.x += this.direction.x;
         head.y += this.direction.y;
 
@@ -98,7 +142,7 @@ export class BotPlayer {
 
         this.snake.unshift(head);
 
-        if (head.x === this.food.x && head.y === this.food.y) {
+        if (this.food && head.x === this.food.x && head.y === this.food.y) {
             this.score += 10;
             this.spawnFood();
         } else {
@@ -108,9 +152,11 @@ export class BotPlayer {
         this.draw();
     }
 
-    makeAIDecision() {
+    private makeAIDecision(): void {
+        if (!this.food) return;
+
         const head = this.snake[0];
-        const possibleDirections = [
+        const possibleDirections: Position[] = [
             { x: 1, y: 0 },   // right
             { x: -1, y: 0 },  // left
             { x: 0, y: 1 },   // down
@@ -123,8 +169,8 @@ export class BotPlayer {
         });
 
         // Calculate distance to food for each direction
-        const directionsWithDistance = validDirections.map(dir => {
-            const newHead = {
+        const directionsWithDistance: DirectionChoice[] = validDirections.map(dir => {
+            const newHead: Position = {
                 x: head.x + dir.x,
                 y: head.y + dir.y
             };
@@ -144,7 +190,7 @@ export class BotPlayer {
                                     newHead.y < 0 || newHead.y >= this.rows
                                 ));
 
-            const distance = Math.abs(newHead.x - this.food.x) + Math.abs(newHead.y - this.food.y);
+            const distance = Math.abs(newHead.x - this.food!.x) + Math.abs(newHead.y - this.food!.y);
 
             return {
                 direction: dir,
@@ -175,8 +221,8 @@ export class BotPlayer {
         }
     }
 
-    spawnFood() {
-        let foodPosition;
+    private spawnFood(): void {
+        let foodPosition: Position;
         do {
             foodPosition = {
                 x: Math.floor(Math.random() * this.cols),
@@ -187,11 +233,11 @@ export class BotPlayer {
         this.food = foodPosition;
     }
 
-    checkCollision(pos, snakeArray) {
+    private checkCollision(pos: Position, snakeArray: Position[]): boolean {
         return snakeArray.some(segment => segment.x === pos.x && segment.y === pos.y);
     }
 
-    draw() {
+    private draw(): void {
         this.ctx.fillStyle = '#f8f9fa';
         this.ctx.fillRect(0, 0, this.width, this.height);
 
@@ -237,14 +283,14 @@ export class BotPlayer {
         }
     }
 
-    getScore() {
+    getScore(): number {
         return this.score;
     }
 
-    getState() {
+    getState(): BotState {
         return {
             snake: [...this.snake],
-            food: { ...this.food },
+            food: this.food ? { ...this.food } : { x: 0, y: 0 },
             score: this.score,
             isRunning: this.isRunning
         };

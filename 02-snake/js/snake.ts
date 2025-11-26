@@ -3,10 +3,65 @@
  * Supports two modes: pass-through (walls wrap) and walls (classic death on collision)
  */
 
+// Type Definitions
+export interface Position {
+    x: number;
+    y: number;
+}
+
+export interface GameConfig {
+    gridSize?: number;
+    mode?: 'pass-through' | 'walls';
+    speed?: number;
+}
+
+export interface GameColors {
+    snake: string;
+    snakeHead: string;
+    food: string;
+    grid: string;
+}
+
+export interface GameState {
+    snake: Position[];
+    food: Position;
+    direction: Position;
+    score: number;
+    isRunning: boolean;
+    isPaused: boolean;
+    mode: 'pass-through' | 'walls';
+}
+
 export class SnakeGame {
-    constructor(canvas, config = {}) {
+    private canvas: HTMLCanvasElement;
+    private ctx: CanvasRenderingContext2D;
+    private gridSize: number;
+    private width: number;
+    private height: number;
+    private cols: number;
+    private rows: number;
+
+    private snake: Position[];
+    private direction: Position;
+    private nextDirection: Position;
+    private food: Position | null;
+    private score: number;
+    public isRunning: boolean;
+    public isPaused: boolean;
+    private mode: 'pass-through' | 'walls';
+    private speed: number;
+    private gameLoop: NodeJS.Timeout | null;
+    private colors: GameColors;
+
+    public onGameOver: ((score: number) => void) | null;
+
+    constructor(canvas: HTMLCanvasElement, config: GameConfig = {}) {
         this.canvas = canvas;
-        this.ctx = canvas.getContext('2d');
+        const ctx = canvas.getContext('2d');
+        if (!ctx) {
+            throw new Error('Could not get 2D context from canvas');
+        }
+        this.ctx = ctx;
         this.gridSize = config.gridSize || 20;
         this.width = canvas.width;
         this.height = canvas.height;
@@ -21,9 +76,10 @@ export class SnakeGame {
         this.score = 0;
         this.isRunning = false;
         this.isPaused = false;
-        this.mode = config.mode || 'pass-through'; // 'pass-through' or 'walls'
-        this.speed = config.speed || 150; // ms per frame
+        this.mode = config.mode || 'pass-through';
+        this.speed = config.speed || 150;
         this.gameLoop = null;
+        this.onGameOver = null;
 
         // Colors
         this.colors = {
@@ -36,7 +92,7 @@ export class SnakeGame {
         this.init();
     }
 
-    init() {
+    private init(): void {
         // Initialize snake in the center, length 3
         const centerX = Math.floor(this.cols / 2);
         const centerY = Math.floor(this.rows / 2);
@@ -52,19 +108,19 @@ export class SnakeGame {
         this.draw();
     }
 
-    start() {
+    start(): void {
         if (this.isRunning) return;
         this.isRunning = true;
         this.isPaused = false;
         this.gameLoop = setInterval(() => this.update(), this.speed);
     }
 
-    pause() {
+    pause(): void {
         if (!this.isRunning) return;
         this.isPaused = !this.isPaused;
     }
 
-    stop() {
+    stop(): void {
         this.isRunning = false;
         this.isPaused = false;
         if (this.gameLoop) {
@@ -73,17 +129,17 @@ export class SnakeGame {
         }
     }
 
-    reset() {
+    reset(): void {
         this.stop();
         this.init();
     }
 
-    setMode(mode) {
+    setMode(mode: 'pass-through' | 'walls'): void {
         this.mode = mode;
         this.reset();
     }
 
-    setSpeed(speed) {
+    setSpeed(speed: number): void {
         this.speed = speed;
         if (this.isRunning) {
             this.stop();
@@ -91,7 +147,7 @@ export class SnakeGame {
         }
     }
 
-    update() {
+    private update(): void {
         if (this.isPaused || !this.isRunning) return;
 
         // Update direction (prevent 180-degree turns)
@@ -102,7 +158,7 @@ export class SnakeGame {
         }
 
         // Calculate new head position
-        const head = { ...this.snake[0] };
+        const head: Position = { ...this.snake[0] };
         head.x += this.direction.x;
         head.y += this.direction.y;
 
@@ -131,7 +187,7 @@ export class SnakeGame {
         this.snake.unshift(head);
 
         // Check food collision
-        if (head.x === this.food.x && head.y === this.food.y) {
+        if (this.food && head.x === this.food.x && head.y === this.food.y) {
             this.score += 10;
             this.spawnFood();
             // Don't remove tail (snake grows)
@@ -143,12 +199,12 @@ export class SnakeGame {
         this.draw();
     }
 
-    changeDirection(newDirection) {
+    changeDirection(newDirection: Position): void {
         this.nextDirection = newDirection;
     }
 
-    spawnFood() {
-        let foodPosition;
+    private spawnFood(): void {
+        let foodPosition: Position;
         do {
             foodPosition = {
                 x: Math.floor(Math.random() * this.cols),
@@ -159,18 +215,18 @@ export class SnakeGame {
         this.food = foodPosition;
     }
 
-    checkCollision(pos, snakeArray) {
+    private checkCollision(pos: Position, snakeArray: Position[]): boolean {
         return snakeArray.some(segment => segment.x === pos.x && segment.y === pos.y);
     }
 
-    gameOver() {
+    private gameOver(): void {
         this.stop();
         if (this.onGameOver) {
             this.onGameOver(this.score);
         }
     }
 
-    draw() {
+    private draw(): void {
         // Clear canvas
         this.ctx.fillStyle = '#f8f9fa';
         this.ctx.fillRect(0, 0, this.width, this.height);
@@ -217,14 +273,14 @@ export class SnakeGame {
         }
     }
 
-    getScore() {
+    getScore(): number {
         return this.score;
     }
 
-    getState() {
+    getState(): GameState {
         return {
             snake: [...this.snake],
-            food: { ...this.food },
+            food: this.food ? { ...this.food } : { x: 0, y: 0 },
             direction: { ...this.direction },
             score: this.score,
             isRunning: this.isRunning,

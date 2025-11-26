@@ -2,11 +2,16 @@
  * Main Application Logic
  */
 
-import { api } from './api.js';
+import { api, UserProfile, LeaderboardEntry, ActivePlayer } from './api.js';
 import { SnakeGame } from './snake.js';
 import { BotPlayer } from './bot.js';
 
 class SnakeApp {
+    private currentUser: UserProfile | null;
+    private game: SnakeGame | null;
+    private currentBot: BotPlayer | null;
+    private bots: Map<string, BotPlayer>;
+
     constructor() {
         this.currentUser = null;
         this.game = null;
@@ -16,7 +21,7 @@ class SnakeApp {
         this.init();
     }
 
-    async init() {
+    async init(): Promise<void> {
         // Check if user is already logged in
         this.currentUser = api.getCurrentUser();
 
@@ -30,7 +35,7 @@ class SnakeApp {
         api.simulateActivePlayers();
     }
 
-    setupEventListeners() {
+    private setupEventListeners(): void {
         // Auth screen
         document.getElementById('show-signup')?.addEventListener('click', (e) => {
             e.preventDefault();
@@ -47,13 +52,13 @@ class SnakeApp {
 
         // Enter key on auth forms
         ['login-username', 'login-password'].forEach(id => {
-            document.getElementById(id)?.addEventListener('keypress', (e) => {
+            document.getElementById(id)?.addEventListener('keypress', (e: KeyboardEvent) => {
                 if (e.key === 'Enter') this.handleLogin();
             });
         });
 
         ['signup-username', 'signup-password', 'signup-confirm'].forEach(id => {
-            document.getElementById(id)?.addEventListener('keypress', (e) => {
+            document.getElementById(id)?.addEventListener('keypress', (e: KeyboardEvent) => {
                 if (e.key === 'Enter') this.handleSignup();
             });
         });
@@ -67,7 +72,10 @@ class SnakeApp {
 
         // Mode selection
         document.querySelectorAll('input[name="mode"]').forEach(radio => {
-            radio.addEventListener('change', (e) => this.changeMode(e.target.value));
+            radio.addEventListener('change', (e) => {
+                const target = e.target as HTMLInputElement;
+                this.changeMode(target.value as 'pass-through' | 'walls');
+            });
         });
 
         // Keyboard controls
@@ -75,28 +83,36 @@ class SnakeApp {
 
         // Tabs
         document.querySelectorAll('.tab-btn').forEach(btn => {
-            btn.addEventListener('click', () => this.switchTab(btn.dataset.tab));
+            btn.addEventListener('click', () => {
+                const tabName = (btn as HTMLElement).dataset.tab;
+                if (tabName) this.switchTab(tabName);
+            });
         });
 
         // Leaderboard
         document.getElementById('refresh-leaderboard')?.addEventListener('click', () => this.loadLeaderboard());
     }
 
-    toggleAuthForms() {
+    private toggleAuthForms(): void {
         const loginForm = document.getElementById('login-form');
         const signupForm = document.getElementById('signup-form');
-        loginForm.classList.toggle('hidden');
-        signupForm.classList.toggle('hidden');
-        document.getElementById('auth-error').textContent = '';
-    }
-
-    async handleLogin() {
-        const username = document.getElementById('login-username').value.trim();
-        const password = document.getElementById('login-password').value;
         const errorEl = document.getElementById('auth-error');
 
+        loginForm?.classList.toggle('hidden');
+        signupForm?.classList.toggle('hidden');
+        if (errorEl) errorEl.textContent = '';
+    }
+
+    private async handleLogin(): Promise<void> {
+        const usernameInput = document.getElementById('login-username') as HTMLInputElement;
+        const passwordInput = document.getElementById('login-password') as HTMLInputElement;
+        const errorEl = document.getElementById('auth-error');
+
+        const username = usernameInput.value.trim();
+        const password = passwordInput.value;
+
         if (!username || !password) {
-            errorEl.textContent = 'Please fill in all fields';
+            if (errorEl) errorEl.textContent = 'Please fill in all fields';
             return;
         }
 
@@ -104,23 +120,29 @@ class SnakeApp {
             this.currentUser = await api.login(username, password);
             this.showGameScreen();
         } catch (error) {
-            errorEl.textContent = error.message;
+            if (errorEl && error instanceof Error) {
+                errorEl.textContent = error.message;
+            }
         }
     }
 
-    async handleSignup() {
-        const username = document.getElementById('signup-username').value.trim();
-        const password = document.getElementById('signup-password').value;
-        const confirm = document.getElementById('signup-confirm').value;
+    private async handleSignup(): Promise<void> {
+        const usernameInput = document.getElementById('signup-username') as HTMLInputElement;
+        const passwordInput = document.getElementById('signup-password') as HTMLInputElement;
+        const confirmInput = document.getElementById('signup-confirm') as HTMLInputElement;
         const errorEl = document.getElementById('auth-error');
 
+        const username = usernameInput.value.trim();
+        const password = passwordInput.value;
+        const confirm = confirmInput.value;
+
         if (!username || !password || !confirm) {
-            errorEl.textContent = 'Please fill in all fields';
+            if (errorEl) errorEl.textContent = 'Please fill in all fields';
             return;
         }
 
         if (password !== confirm) {
-            errorEl.textContent = 'Passwords do not match';
+            if (errorEl) errorEl.textContent = 'Passwords do not match';
             return;
         }
 
@@ -128,11 +150,13 @@ class SnakeApp {
             this.currentUser = await api.signup(username, password);
             this.showGameScreen();
         } catch (error) {
-            errorEl.textContent = error.message;
+            if (errorEl && error instanceof Error) {
+                errorEl.textContent = error.message;
+            }
         }
     }
 
-    async handleLogout() {
+    private async handleLogout(): Promise<void> {
         await api.logout();
         this.currentUser = null;
         if (this.game) {
@@ -148,9 +172,11 @@ class SnakeApp {
         this.showAuthScreen();
     }
 
-    showAuthScreen() {
+    private showAuthScreen(): void {
         const authScreen = document.getElementById('auth-screen');
         const gameScreen = document.getElementById('game-screen');
+
+        if (!authScreen || !gameScreen) return;
 
         // Remove active from game screen first
         gameScreen.classList.remove('active');
@@ -164,17 +190,20 @@ class SnakeApp {
         authScreen.scrollTop = 0;
 
         // Clear form fields
-        document.getElementById('login-username').value = '';
-        document.getElementById('login-password').value = '';
-        document.getElementById('signup-username').value = '';
-        document.getElementById('signup-password').value = '';
-        document.getElementById('signup-confirm').value = '';
-        document.getElementById('auth-error').textContent = '';
+        (document.getElementById('login-username') as HTMLInputElement).value = '';
+        (document.getElementById('login-password') as HTMLInputElement).value = '';
+        (document.getElementById('signup-username') as HTMLInputElement).value = '';
+        (document.getElementById('signup-password') as HTMLInputElement).value = '';
+        (document.getElementById('signup-confirm') as HTMLInputElement).value = '';
+        const errorEl = document.getElementById('auth-error');
+        if (errorEl) errorEl.textContent = '';
     }
 
-    showGameScreen() {
+    private showGameScreen(): void {
         const authScreen = document.getElementById('auth-screen');
         const gameScreen = document.getElementById('game-screen');
+
+        if (!authScreen || !gameScreen || !this.currentUser) return;
 
         // Remove active from auth screen first
         authScreen.classList.remove('active');
@@ -187,68 +216,77 @@ class SnakeApp {
         window.scrollTo(0, 0);
         gameScreen.scrollTop = 0;
 
-        document.getElementById('user-display').textContent = `👤 ${this.currentUser.username}`;
-        document.getElementById('high-score').textContent = this.currentUser.highScore || 0;
+        const userDisplay = document.getElementById('user-display');
+        const highScoreEl = document.getElementById('high-score');
+        if (userDisplay) userDisplay.textContent = `👤 ${this.currentUser.username}`;
+        if (highScoreEl) highScoreEl.textContent = String(this.currentUser.highScore || 0);
 
         // Reset game mode radio buttons to walls (default)
-        const wallsRadio = document.querySelector('input[name="mode"][value="walls"]');
+        const wallsRadio = document.querySelector('input[name="mode"][value="walls"]') as HTMLInputElement;
         if (wallsRadio) {
             wallsRadio.checked = true;
         }
 
         // Initialize game with walls mode as default
-        const canvas = document.getElementById('game-canvas');
+        const canvas = document.getElementById('game-canvas') as HTMLCanvasElement;
         this.game = new SnakeGame(canvas, {
             gridSize: 20,
             mode: 'walls',
             speed: 150
         });
 
-        this.game.onGameOver = (score) => this.onGameOver(score);
+        this.game.onGameOver = (score: number) => this.onGameOver(score);
 
         // Load initial data
         this.loadLeaderboard();
         this.loadActivePlayers();
     }
 
-    startGame() {
+    private startGame(): void {
         if (!this.game) return;
         this.game.start();
-        document.getElementById('start-btn').disabled = true;
-        document.getElementById('pause-btn').disabled = false;
+        const startBtn = document.getElementById('start-btn') as HTMLButtonElement;
+        const pauseBtn = document.getElementById('pause-btn') as HTMLButtonElement;
+        startBtn.disabled = true;
+        pauseBtn.disabled = false;
         this.updateScoreDisplay();
     }
 
-    pauseGame() {
+    private pauseGame(): void {
         if (!this.game) return;
         this.game.pause();
-        const pauseBtn = document.getElementById('pause-btn');
+        const pauseBtn = document.getElementById('pause-btn') as HTMLButtonElement;
         pauseBtn.textContent = this.game.isPaused ? 'Resume' : 'Pause';
     }
 
-    resetGame() {
+    private resetGame(): void {
         if (!this.game) return;
         this.game.reset();
-        document.getElementById('start-btn').disabled = false;
-        document.getElementById('pause-btn').disabled = true;
-        document.getElementById('pause-btn').textContent = 'Pause';
-        document.getElementById('game-over-overlay').classList.add('hidden');
+        const startBtn = document.getElementById('start-btn') as HTMLButtonElement;
+        const pauseBtn = document.getElementById('pause-btn') as HTMLButtonElement;
+        const gameOverOverlay = document.getElementById('game-over-overlay');
+        startBtn.disabled = false;
+        pauseBtn.disabled = true;
+        pauseBtn.textContent = 'Pause';
+        gameOverOverlay?.classList.add('hidden');
         this.updateScoreDisplay();
     }
 
-    playAgain() {
+    private playAgain(): void {
         this.resetGame();
         this.startGame();
     }
 
-    changeMode(mode) {
+    private changeMode(mode: 'pass-through' | 'walls'): void {
         if (!this.game) return;
         this.game.setMode(mode);
-        document.getElementById('start-btn').disabled = false;
-        document.getElementById('pause-btn').disabled = true;
+        const startBtn = document.getElementById('start-btn') as HTMLButtonElement;
+        const pauseBtn = document.getElementById('pause-btn') as HTMLButtonElement;
+        startBtn.disabled = false;
+        pauseBtn.disabled = true;
     }
 
-    handleKeyPress(e) {
+    private handleKeyPress(e: KeyboardEvent): void {
         if (!this.game) return;
 
         // Spacebar to start, pause, or play again
@@ -257,7 +295,7 @@ class SnakeApp {
 
             // Check if game over overlay is visible
             const gameOverOverlay = document.getElementById('game-over-overlay');
-            if (!gameOverOverlay.classList.contains('hidden')) {
+            if (gameOverOverlay && !gameOverOverlay.classList.contains('hidden')) {
                 this.playAgain();
                 return;
             }
@@ -274,7 +312,7 @@ class SnakeApp {
         // Arrow keys only work when game is running
         if (!this.game.isRunning) return;
 
-        const keyMap = {
+        const keyMap: Record<string, { x: number; y: number }> = {
             'ArrowUp': { x: 0, y: -1 },
             'ArrowDown': { x: 0, y: 1 },
             'ArrowLeft': { x: -1, y: 0 },
@@ -287,9 +325,10 @@ class SnakeApp {
         }
     }
 
-    updateScoreDisplay() {
+    private updateScoreDisplay(): void {
         if (!this.game) return;
-        document.getElementById('current-score').textContent = this.game.getScore();
+        const scoreEl = document.getElementById('current-score');
+        if (scoreEl) scoreEl.textContent = String(this.game.getScore());
 
         // Update score periodically while game is running
         if (this.game.isRunning) {
@@ -297,27 +336,35 @@ class SnakeApp {
         }
     }
 
-    async onGameOver(score) {
-        document.getElementById('final-score').textContent = score;
-        document.getElementById('game-over-overlay').classList.remove('hidden');
-        document.getElementById('start-btn').disabled = false;
-        document.getElementById('pause-btn').disabled = true;
+    private async onGameOver(score: number): Promise<void> {
+        const finalScoreEl = document.getElementById('final-score');
+        const gameOverOverlay = document.getElementById('game-over-overlay');
+        const startBtn = document.getElementById('start-btn') as HTMLButtonElement;
+        const pauseBtn = document.getElementById('pause-btn') as HTMLButtonElement;
+
+        if (finalScoreEl) finalScoreEl.textContent = String(score);
+        gameOverOverlay?.classList.remove('hidden');
+        startBtn.disabled = false;
+        pauseBtn.disabled = true;
 
         // Update high score
-        if (score > this.currentUser.highScore) {
+        if (this.currentUser && score > this.currentUser.highScore) {
             await api.updateScore(this.currentUser.username, score);
             this.currentUser.highScore = score;
-            document.getElementById('high-score').textContent = score;
+            const highScoreEl = document.getElementById('high-score');
+            if (highScoreEl) highScoreEl.textContent = String(score);
             await this.loadLeaderboard();
         }
     }
 
-    async loadLeaderboard() {
+    private async loadLeaderboard(): Promise<void> {
         const leaderboard = await api.getLeaderboard();
         const listEl = document.getElementById('leaderboard-list');
+        if (!listEl) return;
+
         listEl.innerHTML = '';
 
-        leaderboard.forEach((entry, index) => {
+        leaderboard.forEach((entry: LeaderboardEntry, index: number) => {
             const item = document.createElement('div');
             item.className = 'leaderboard-item';
             item.innerHTML = `
@@ -329,12 +376,14 @@ class SnakeApp {
         });
     }
 
-    async loadActivePlayers() {
+    private async loadActivePlayers(): Promise<void> {
         const players = await api.getActivePlayers();
         const listEl = document.getElementById('active-players-list');
+        if (!listEl) return;
+
         listEl.innerHTML = '';
 
-        players.forEach(player => {
+        players.forEach((player: ActivePlayer) => {
             const item = document.createElement('div');
             item.className = 'player-item';
             item.innerHTML = `
@@ -349,7 +398,7 @@ class SnakeApp {
         setTimeout(() => this.loadActivePlayers(), 3000);
     }
 
-    spectatePlayer(username, itemEl) {
+    private spectatePlayer(username: string, itemEl: HTMLElement): void {
         // Remove active class from all items
         document.querySelectorAll('.player-item').forEach(el => el.classList.remove('active'));
         itemEl.classList.add('active');
@@ -361,7 +410,7 @@ class SnakeApp {
 
         // Create or reuse bot for this player
         if (!this.bots.has(username)) {
-            const canvas = document.getElementById('spectate-canvas');
+            const canvas = document.getElementById('spectate-canvas') as HTMLCanvasElement;
             const bot = new BotPlayer(canvas, {
                 gridSize: 10,
                 mode: 'pass-through',
@@ -370,28 +419,33 @@ class SnakeApp {
             this.bots.set(username, bot);
         }
 
-        this.currentBot = this.bots.get(username);
+        this.currentBot = this.bots.get(username)!;
         this.currentBot.start();
 
         // Show spectate info
-        document.getElementById('spectate-info').classList.remove('hidden');
-        document.getElementById('spectate-username').textContent = username;
+        const spectateInfo = document.getElementById('spectate-info');
+        const spectateUsername = document.getElementById('spectate-username');
+        spectateInfo?.classList.remove('hidden');
+        if (spectateUsername) spectateUsername.textContent = username;
 
         // Update score display
         this.updateSpectateScore();
     }
 
-    updateSpectateScore() {
+    private updateSpectateScore(): void {
         if (this.currentBot && this.currentBot.isRunning) {
-            document.getElementById('spectate-score').textContent = this.currentBot.getScore();
+            const spectateScoreEl = document.getElementById('spectate-score');
+            if (spectateScoreEl) {
+                spectateScoreEl.textContent = String(this.currentBot.getScore());
+            }
             setTimeout(() => this.updateSpectateScore(), 100);
         }
     }
 
-    switchTab(tabName) {
+    private switchTab(tabName: string): void {
         // Update tab buttons
         document.querySelectorAll('.tab-btn').forEach(btn => {
-            btn.classList.toggle('active', btn.dataset.tab === tabName);
+            btn.classList.toggle('active', (btn as HTMLElement).dataset.tab === tabName);
         });
 
         // Update tab content

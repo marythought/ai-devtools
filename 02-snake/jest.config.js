@@ -1,9 +1,11 @@
 export default {
+  preset: 'ts-jest/presets/default-esm',
   testEnvironment: 'jsdom',
+  setupFilesAfterEnv: ['<rootDir>/tests/setupTests.ts'],
   coverageDirectory: 'coverage',
   collectCoverageFrom: [
-    'js/**/*.js',
-    '!js/main.js', // Main app initialization - covered by integration tests
+    'js/**/*.ts',
+    '!js/main.ts', // Main app initialization - covered by integration tests
     '!**/node_modules/**'
   ],
   coverageThreshold: {
@@ -15,8 +17,19 @@ export default {
     }
   },
   moduleNameMapper: {
-    '\\.(css|less|scss|sass)$': '<rootDir>/tests/__mocks__/styleMock.js'
+    '\\.(css|less|scss|sass)$': '<rootDir>/tests/__mocks__/styleMock.js',
+    '^(\\.{1,2}/.*)\\.js$': '$1'
   },
-  transform: {},
-  testMatch: ['**/tests/**/*.test.js']
+  extensionsToTreatAsEsm: ['.ts'],
+  transform: {
+    '^.+\\.(ts|js)$': ['ts-jest', {
+      useESM: true,
+      tsconfig: {
+        module: 'ES2020',
+        target: 'ES2020',
+        allowJs: true
+      }
+    }]
+  },
+  testMatch: ['**/tests/**/*.test.ts']
 };
