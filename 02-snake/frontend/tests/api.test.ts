@@ -177,4 +177,42 @@ describe('MockAPI', () => {
             expect(api.activePlayers.length).toBeGreaterThan(0);
         });
     });
+
+    describe('Simulate Active Players', () => {
+        beforeEach(() => {
+            jest.useFakeTimers();
+        });
+
+        afterEach(() => {
+            jest.useRealTimers();
+        });
+
+        it('should update player scores over time', () => {
+            const initialScores = api.activePlayers.map(p => ({ ...p }));
+
+            // Mock Math.random to ensure score updates happen
+            let callCount = 0;
+            jest.spyOn(Math, 'random').mockImplementation(() => {
+                callCount++;
+                // For score update checks (> 0.3), return 0.5 to trigger updates
+                // For playing toggle checks (> 0.95), return 0.98 to prevent toggling
+                return callCount % 2 === 0 ? 0.5 : 0.98;
+            });
+
+            api.simulateActivePlayers();
+
+            // Fast-forward time by 2 seconds
+            jest.advanceTimersByTime(2000);
+
+            // At least some players should have changed scores
+            const hasScoreChanges = api.activePlayers.some((player, i) => {
+                return player.score !== initialScores[i].score;
+            });
+
+            expect(hasScoreChanges).toBe(true);
+
+            // Restore Math.random
+            jest.restoreAllMocks();
+        });
+    });
 });

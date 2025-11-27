@@ -312,5 +312,15 @@ describe('SnakeGame', () => {
             game.setSpeed(100);
             expect(game.speed).toBe(100);
         });
+
+        it('should restart game when changing speed while running', () => {
+            game.start();
+            expect(game.isRunning).toBe(true);
+
+            game.setSpeed(50);
+
+            expect(game.speed).toBe(50);
+            expect(game.isRunning).toBe(true);  // Should still be running
+        });
     });
 });

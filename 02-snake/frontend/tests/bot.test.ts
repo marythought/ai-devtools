@@ -124,6 +124,25 @@ describe('BotPlayer', () => {
             const wouldCollide = bot.checkCollision(nextHead, bot.snake);
             expect(wouldCollide).toBe(false);
         });
+
+        it('should find emergency safe direction when trapped', () => {
+            // Create a scenario where best directions collide but a safe one exists
+            bot.mode = 'walls';
+            // Snake in corner with body blocking some directions
+            bot.snake = [
+                { x: 0, y: 0 },      // head at top-left corner
+                { x: 0, y: 1 },      // body below
+                { x: 0, y: 2 }       // body below
+            ];
+            bot.direction = { x: 0, y: -1 };  // Currently moving up
+            bot.food = { x: 0, y: 10 };       // Food far below (would want to go down/left)
+
+            bot.makeAIDecision();
+
+            // Should have found a safe direction (right is the only safe option)
+            expect(bot.direction).toBeDefined();
+            expect(bot.direction.x).toBe(1);  // Should go right to avoid collision
+        });
     });
 
     describe('Bot Behavior', () => {
@@ -155,16 +174,105 @@ describe('BotPlayer', () => {
             expect(bot.snake.length).toBe(initialLength + 1);
         });
 
-        it('should reset on collision in walls mode', () => {
+        it('should move without growing when not eating food', () => {
+            // Position snake away from food
+            bot.snake = [{ x: 5, y: 5 }, { x: 4, y: 5 }, { x: 3, y: 5 }];
+            bot.food = { x: 20, y: 20 };  // Far from snake
+            const initialLength = bot.snake.length;
+            bot.direction = { x: 1, y: 0 };
+            bot.isRunning = true;
+
+            // Mock makeAIDecision to not change direction
+            bot.makeAIDecision = jest.fn();
+
+            bot.update();
+
+            expect(bot.snake.length).toBe(initialLength);  // Length stays same
+            expect(bot.snake[0].x).toBe(6);  // Head moved
+        });
+
+        it('should reset on collision with right wall in walls mode', () => {
             bot.mode = 'walls';
             bot.snake = [{ x: bot.cols - 1, y: 10 }];
             bot.direction = { x: 1, y: 0 };
             bot.start();
 
+            // Mock makeAIDecision to not change direction
+            bot.makeAIDecision = jest.fn();
+
             bot.update();
 
             // Should have reset
             expect(bot.score).toBe(0);
+        });
+
+        it('should reset on collision with left wall in walls mode', () => {
+            bot.mode = 'walls';
+            bot.snake = [{ x: 0, y: 10 }];
+            bot.direction = { x: -1, y: 0 };
+            bot.start();
+
+            // Mock makeAIDecision to not change direction
+            bot.makeAIDecision = jest.fn();
+
+            bot.update();
+
+            // Should have reset
+            expect(bot.score).toBe(0);
+        });
+
+        it('should reset on collision with top wall in walls mode', () => {
+            bot.mode = 'walls';
+            bot.snake = [{ x: 10, y: 0 }];
+            bot.direction = { x: 0, y: -1 };
+            bot.start();
+
+            // Mock makeAIDecision to not change direction
+            bot.makeAIDecision = jest.fn();
+
+            bot.update();
+
+            // Should have reset
+            expect(bot.score).toBe(0);
+        });
+
+        it('should reset on collision with bottom wall in walls mode', () => {
+            bot.mode = 'walls';
+            bot.snake = [{ x: 10, y: bot.rows - 1 }];
+            bot.direction = { x: 0, y: 1 };
+            bot.start();
+
+            // Mock makeAIDecision to not change direction
+            bot.makeAIDecision = jest.fn();
+
+            bot.update();
+
+            // Should have reset
+            expect(bot.score).toBe(0);
+        });
+
+        it('should reset on self-collision', () => {
+            // Create a snake that will collide with itself
+            bot.snake = [
+                { x: 5, y: 5 },  // head
+                { x: 4, y: 5 },  // body
+                { x: 3, y: 5 },  // body
+                { x: 3, y: 6 },  // body
+                { x: 4, y: 6 },  // body
+                { x: 5, y: 6 }   // body - will collide with head when moving down
+            ];
+            bot.direction = { x: 0, y: 1 };  // Moving down
+            bot.score = 50;
+            bot.start();
+
+            // Mock makeAIDecision to not change direction
+            bot.makeAIDecision = jest.fn();
+
+            bot.update();
+
+            // Should have reset
+            expect(bot.score).toBe(0);
+            expect(bot.snake.length).toBe(3);  // Reset to initial length
         });
     });
 
