@@ -52,3 +52,14 @@ htmlcov/
 .tox/
 coverage.xml
 pythonanywhere_deploy_key*
+
+# Node.js
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+coverage/
+
+# TypeScript
+dist/
+*.tsbuildinfo

@@ -1,0 +1,459 @@
+openapi: 3.0.3
+info:
+  title: Snake Game API
+  description: |
+    RESTful API for the multiplayer snake game with spectator mode.
+    Supports user authentication, leaderboards, and real-time player tracking.
+  version: 1.0.0
+  contact:
+    name: Mary Dickson
+    email: mdickson@gmail.com
+
+servers:
+  - url: http://localhost:3000/api/v1
+    description: Local development server
+  - url: https://api.snakegame.example.com/v1
+    description: Production server
+
+tags:
+  - name: Authentication
+    description: User authentication and session management
+  - name: Leaderboard
+    description: High scores and leaderboard management
+  - name: Players
+    description: Active players and spectator mode
+
+paths:
+  /auth/login:
+    post:
+      tags:
+        - Authentication
+      summary: User login
+      description: Authenticate a user with username and password
+      operationId: login
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - username
+                - password
+              properties:
+                username:
+                  type: string
+                  minLength: 3
+                  example: "player1"
+                password:
+                  type: string
+                  minLength: 6
+                  format: password
+                  example: "pass123"
+      responses:
+        '200':
+          description: Login successful
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserProfile'
+        '401':
+          description: Invalid credentials
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              examples:
+                userNotFound:
+                  value:
+                    error: "User not found"
+                invalidPassword:
+                  value:
+                    error: "Invalid password"
+        '400':
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /auth/signup:
+    post:
+      tags:
+        - Authentication
+      summary: User signup
+      description: Create a new user account
+      operationId: signup
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - username
+                - password
+              properties:
+                username:
+                  type: string
+                  minLength: 3
+                  example: "newplayer"
+                  description: Username must be at least 3 characters
+                password:
+                  type: string
+                  minLength: 6
+                  format: password
+                  example: "securepass123"
+                  description: Password must be at least 6 characters
+      responses:
+        '201':
+          description: User created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserProfile'
+        '400':
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              examples:
+                usernameTaken:
+                  value:
+                    error: "Username already exists"
+                usernameTooShort:
+                  value:
+                    error: "Username must be at least 3 characters"
+                passwordTooShort:
+                  value:
+                    error: "Password must be at least 6 characters"
+
+  /auth/logout:
+    post:
+      tags:
+        - Authentication
+      summary: User logout
+      description: End the current user session
+      operationId: logout
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Logout successful
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+        '401':
+          description: Not authenticated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /auth/current:
+    get:
+      tags:
+        - Authentication
+      summary: Get current user
+      description: Retrieve the currently authenticated user's profile
+      operationId: getCurrentUser
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Current user profile
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserProfile'
+        '401':
+          description: Not authenticated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /leaderboard:
+    get:
+      tags:
+        - Leaderboard
+      summary: Get leaderboard
+      description: Retrieve the top 10 players by high score
+      operationId: getLeaderboard
+      parameters:
+        - name: limit
+          in: query
+          description: Number of entries to return (default 10)
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 100
+            default: 10
+      responses:
+        '200':
+          description: Leaderboard entries
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/LeaderboardEntry'
+                maxItems: 100
+              example:
+                - username: "snakemaster"
+                  score: 450
+                - username: "python_pro"
+                  score: 320
+                - username: "player1"
+                  score: 250
+
+  /scores:
+    post:
+      tags:
+        - Leaderboard
+      summary: Update user score
+      description: Submit a new score for the current user (updates high score if better)
+      operationId: updateScore
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - username
+                - score
+              properties:
+                username:
+                  type: string
+                  example: "player1"
+                score:
+                  type: integer
+                  minimum: 0
+                  example: 350
+                  description: The score achieved in the game
+      responses:
+        '200':
+          description: Score updated successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  updated:
+                    type: boolean
+                    description: Whether the high score was updated
+                    example: true
+                  newHighScore:
+                    type: integer
+                    example: 350
+        '400':
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '401':
+          description: Not authenticated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /players/active:
+    get:
+      tags:
+        - Players
+      summary: Get active players
+      description: Retrieve list of currently active players (excludes current user)
+      operationId: getActivePlayers
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: List of active players
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/ActivePlayer'
+              example:
+                - username: "snakemaster"
+                  score: 120
+                  playing: true
+                - username: "gamer99"
+                  score: 80
+                  playing: true
+                - username: "python_pro"
+                  score: 150
+                  playing: true
+        '401':
+          description: Not authenticated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /players/{username}/state:
+    get:
+      tags:
+        - Players
+      summary: Get player game state
+      description: Retrieve the current game state for a specific player (for spectator mode)
+      operationId: getPlayerGameState
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: username
+          in: path
+          required: true
+          description: Username of the player to spectate
+          schema:
+            type: string
+          example: "snakemaster"
+      responses:
+        '200':
+          description: Player game state
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GameState'
+        '404':
+          description: Player not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                error: "Player not found"
+        '401':
+          description: Not authenticated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+      description: JWT token obtained from login/signup
+
+  schemas:
+    UserProfile:
+      type: object
+      required:
+        - username
+        - highScore
+      properties:
+        username:
+          type: string
+          minLength: 3
+          example: "player1"
+          description: Unique username
+        highScore:
+          type: integer
+          minimum: 0
+          example: 250
+          description: User's highest score
+      example:
+        username: "player1"
+        highScore: 250
+
+    LeaderboardEntry:
+      type: object
+      required:
+        - username
+        - score
+      properties:
+        username:
+          type: string
+          example: "snakemaster"
+          description: Player username
+        score:
+          type: integer
+          minimum: 0
+          example: 450
+          description: Player's high score
+      example:
+        username: "snakemaster"
+        score: 450
+
+    ActivePlayer:
+      type: object
+      required:
+        - username
+        - score
+        - playing
+      properties:
+        username:
+          type: string
+          example: "gamer99"
+          description: Player username
+        score:
+          type: integer
+          minimum: 0
+          example: 120
+          description: Current game score
+        playing:
+          type: boolean
+          example: true
+          description: Whether the player is currently playing
+      example:
+        username: "gamer99"
+        score: 120
+        playing: true
+
+    GameState:
+      type: object
+      required:
+        - username
+        - score
+        - playing
+      properties:
+        username:
+          type: string
+          example: "snakemaster"
+          description: Player username
+        score:
+          type: integer
+          minimum: 0
+          example: 150
+          description: Current score in the active game
+        playing:
+          type: boolean
+          example: true
+          description: Whether the player is currently playing
+      example:
+        username: "snakemaster"
+        score: 150
+        playing: true
+
+    Error:
+      type: object
+      required:
+        - error
+      properties:
+        error:
+          type: string
+          description: Error message
+          example: "Invalid credentials"
+      example:
+        error: "Invalid credentials"
+
+security:
+  - bearerAuth: []
