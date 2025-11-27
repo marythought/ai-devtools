@@ -1,31 +1,38 @@
 /**
- * AI Bot for simulating other players
- * Uses simple pathfinding to move towards food
+ * Snake Game Logic
+ * Supports two modes: pass-through (walls wrap) and walls (classic death on collision)
  */
 
-import { Position, GameColors } from './snake.js';
-
 // Type Definitions
-export interface BotConfig {
+export interface Position {
+    x: number;
+    y: number;
+}
+
+export interface GameConfig {
     gridSize?: number;
     mode?: 'pass-through' | 'walls';
     speed?: number;
 }
 
-interface DirectionChoice {
-    direction: Position;
-    distance: number;
-    wouldCollide: boolean;
+export interface GameColors {
+    snake: string;
+    snakeHead: string;
+    food: string;
+    grid: string;
 }
 
-export interface BotState {
+export interface GameState {
     snake: Position[];
     food: Position;
+    direction: Position;
     score: number;
     isRunning: boolean;
+    isPaused: boolean;
+    mode: 'pass-through' | 'walls';
 }
 
-export class BotPlayer {
+export class SnakeGame {
     private canvas: HTMLCanvasElement;
     private ctx: CanvasRenderingContext2D;
     private gridSize: number;
@@ -36,40 +43,49 @@ export class BotPlayer {
 
     private snake: Position[];
     private direction: Position;
+    private nextDirection: Position;
     private food: Position | null;
     private score: number;
     public isRunning: boolean;
+    public isPaused: boolean;
     private mode: 'pass-through' | 'walls';
     private speed: number;
     private gameLoop: NodeJS.Timeout | null;
     private colors: GameColors;
 
-    constructor(canvas: HTMLCanvasElement, config: BotConfig = {}) {
+    public onGameOver: ((score: number) => void) | null;
+
+    constructor(canvas: HTMLCanvasElement, config: GameConfig = {}) {
         this.canvas = canvas;
         const ctx = canvas.getContext('2d');
         if (!ctx) {
             throw new Error('Could not get 2D context from canvas');
         }
         this.ctx = ctx;
-        this.gridSize = config.gridSize || 10;
+        this.gridSize = config.gridSize || 20;
         this.width = canvas.width;
         this.height = canvas.height;
         this.cols = this.width / this.gridSize;
         this.rows = this.height / this.gridSize;
 
+        // Game state
         this.snake = [];
         this.direction = { x: 1, y: 0 };
+        this.nextDirection = { x: 1, y: 0 };
         this.food = null;
         this.score = 0;
         this.isRunning = false;
+        this.isPaused = false;
         this.mode = config.mode || 'pass-through';
-        this.speed = config.speed || 200;
+        this.speed = config.speed || 150;
         this.gameLoop = null;
+        this.onGameOver = null;
 
+        // Colors
         this.colors = {
-            snake: '#2196f3',
-            snakeHead: '#1565c0',
-            food: '#ff9800',
+            snake: '#4caf50',
+            snakeHead: '#2e7d32',
+            food: '#f44336',
             grid: '#e0e0e0'
         };
 
@@ -77,6 +93,7 @@ export class BotPlayer {
     }
 
     private init(): void {
+        // Initialize snake in the center, length 3
         const centerX = Math.floor(this.cols / 2);
         const centerY = Math.floor(this.rows / 2);
         this.snake = [
@@ -85,6 +102,7 @@ export class BotPlayer {
             { x: centerX - 2, y: centerY }
         ];
         this.direction = { x: 1, y: 0 };
+        this.nextDirection = { x: 1, y: 0 };
         this.score = 0;
         this.spawnFood();
         this.draw();
@@ -93,11 +111,18 @@ export class BotPlayer {
     start(): void {
         if (this.isRunning) return;
         this.isRunning = true;
+        this.isPaused = false;
         this.gameLoop = setInterval(() => this.update(), this.speed);
+    }
+
+    pause(): void {
+        if (!this.isRunning) return;
+        this.isPaused = !this.isPaused;
     }
 
     stop(): void {
         this.isRunning = false;
+        this.isPaused = false;
         if (this.gameLoop) {
             clearInterval(this.gameLoop);
             this.gameLoop = null;
@@ -109,116 +134,73 @@ export class BotPlayer {
         this.init();
     }
 
-    private update(): void {
-        if (!this.isRunning) return;
+    setMode(mode: 'pass-through' | 'walls'): void {
+        this.mode = mode;
+        this.reset();
+    }
 
-        // AI decision: move towards food
-        this.makeAIDecision();
+    setSpeed(speed: number): void {
+        this.speed = speed;
+        if (this.isRunning) {
+            this.stop();
+            this.start();
+        }
+    }
 
+    update(): void {
+        if (this.isPaused || !this.isRunning) return;
+
+        // Update direction (prevent 180-degree turns)
+        const isOpposite = this.nextDirection.x === -this.direction.x &&
+                          this.nextDirection.y === -this.direction.y;
+        if (!isOpposite) {
+            this.direction = { ...this.nextDirection };
+        }
+
+        // Calculate new head position
         const head: Position = { ...this.snake[0] };
         head.x += this.direction.x;
         head.y += this.direction.y;
 
-        // Handle boundaries
+        // Handle boundary collision based on mode
         if (this.mode === 'pass-through') {
+            // Wrap around walls
             if (head.x < 0) head.x = this.cols - 1;
             if (head.x >= this.cols) head.x = 0;
             if (head.y < 0) head.y = this.rows - 1;
             if (head.y >= this.rows) head.y = 0;
         } else {
+            // Classic mode: die on wall collision
             if (head.x < 0 || head.x >= this.cols || head.y < 0 || head.y >= this.rows) {
-                this.reset();
-                this.start();
+                this.gameOver();
                 return;
             }
         }
 
         // Check self collision
         if (this.checkCollision(head, this.snake)) {
-            this.reset();
-            this.start();
+            this.gameOver();
             return;
         }
 
+        // Add new head
         this.snake.unshift(head);
 
+        // Check food collision
         if (this.food && head.x === this.food.x && head.y === this.food.y) {
             this.score += 10;
             this.spawnFood();
+            // Don't remove tail (snake grows)
         } else {
+            // Remove tail (snake moves)
             this.snake.pop();
         }
 
         this.draw();
     }
 
-    private makeAIDecision(): void {
-        if (!this.food) return;
-
-        const head = this.snake[0];
-        const possibleDirections: Position[] = [
-            { x: 1, y: 0 },   // right
-            { x: -1, y: 0 },  // left
-            { x: 0, y: 1 },   // down
-            { x: 0, y: -1 }   // up
-        ];
-
-        // Filter out opposite direction
-        const validDirections = possibleDirections.filter(dir => {
-            return !(dir.x === -this.direction.x && dir.y === -this.direction.y);
-        });
-
-        // Calculate distance to food for each direction
-        const directionsWithDistance: DirectionChoice[] = validDirections.map(dir => {
-            const newHead: Position = {
-                x: head.x + dir.x,
-                y: head.y + dir.y
-            };
-
-            // Handle wrapping for distance calculation
-            if (this.mode === 'pass-through') {
-                if (newHead.x < 0) newHead.x = this.cols - 1;
-                if (newHead.x >= this.cols) newHead.x = 0;
-                if (newHead.y < 0) newHead.y = this.rows - 1;
-                if (newHead.y >= this.rows) newHead.y = 0;
-            }
-
-            // Check if this direction would cause collision
-            const wouldCollide = this.checkCollision(newHead, this.snake) ||
-                                (this.mode === 'walls' && (
-                                    newHead.x < 0 || newHead.x >= this.cols ||
-                                    newHead.y < 0 || newHead.y >= this.rows
-                                ));
-
-            const distance = Math.abs(newHead.x - this.food!.x) + Math.abs(newHead.y - this.food!.y);
-
-            return {
-                direction: dir,
-                distance,
-                wouldCollide
-            };
-        });
-
-        // Sort by distance, avoiding collisions
-        directionsWithDistance.sort((a, b) => {
-            if (a.wouldCollide && !b.wouldCollide) return 1;
-            if (!a.wouldCollide && b.wouldCollide) return -1;
-            return a.distance - b.distance;
-        });
-
-        // Choose best direction with some randomness
-        const bestChoices = directionsWithDistance.slice(0, 2);
-        const chosen = bestChoices[Math.floor(Math.random() * bestChoices.length)];
-
-        if (chosen && !chosen.wouldCollide) {
-            this.direction = chosen.direction;
-        } else if (directionsWithDistance.length > 0) {
-            // Emergency: pick any non-colliding direction
-            const safeDirection = directionsWithDistance.find(d => !d.wouldCollide);
-            if (safeDirection) {
-                this.direction = safeDirection.direction;
-            }
-        }
+    changeDirection(newDirection: Position): void {
+        this.nextDirection = newDirection;
     }
 
     private spawnFood(): void {
@@ -237,7 +219,15 @@ export class BotPlayer {
         return snakeArray.some(segment => segment.x === pos.x && segment.y === pos.y);
     }
 
+    private gameOver(): void {
+        this.stop();
+        if (this.onGameOver) {
+            this.onGameOver(this.score);
+        }
+    }
+
     private draw(): void {
+        // Clear canvas
         this.ctx.fillStyle = '#f8f9fa';
         this.ctx.fillRect(0, 0, this.width, this.height);
 
@@ -287,12 +277,15 @@ export class BotPlayer {
         return this.score;
     }
 
-    getState(): BotState {
+    getState(): GameState {
         return {
             snake: [...this.snake],
             food: this.food ? { ...this.food } : { x: 0, y: 0 },
+            direction: { ...this.direction },
             score: this.score,
-            isRunning: this.isRunning
+            isRunning: this.isRunning,
+            isPaused: this.isPaused,
+            mode: this.mode
         };
     }
 }

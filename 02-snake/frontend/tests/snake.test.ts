@@ -123,8 +123,7 @@ describe('SnakeGame', () => {
 
         it('should move snake forward', () => {
             const initialHead = { ...game.snake[0] };
-            game.start();
-            game.stop();
+            game.isRunning = true; // Set running state for testing
             game.update();
 
             expect(game.snake[0].x).toBe(initialHead.x + 1);
@@ -133,6 +132,7 @@ describe('SnakeGame', () => {
         it('should wrap around right wall', () => {
             game.snake = [{ x: game.cols - 1, y: 10 }];
             game.direction = { x: 1, y: 0 };
+            game.isRunning = true;
             game.update();
 
             expect(game.snake[0].x).toBe(0);
@@ -142,6 +142,7 @@ describe('SnakeGame', () => {
         it('should wrap around left wall', () => {
             game.snake = [{ x: 0, y: 10 }];
             game.direction = { x: -1, y: 0 };
+            game.isRunning = true;
             game.update();
 
             expect(game.snake[0].x).toBe(game.cols - 1);
@@ -151,6 +152,8 @@ describe('SnakeGame', () => {
         it('should wrap around bottom wall', () => {
             game.snake = [{ x: 10, y: game.rows - 1 }];
             game.direction = { x: 0, y: 1 };
+            game.changeDirection({ x: 0, y: 1 }); // Set nextDirection too
+            game.isRunning = true;
             game.update();
 
             expect(game.snake[0].x).toBe(10);
@@ -160,6 +163,8 @@ describe('SnakeGame', () => {
         it('should wrap around top wall', () => {
             game.snake = [{ x: 10, y: 0 }];
             game.direction = { x: 0, y: -1 };
+            game.changeDirection({ x: 0, y: -1 }); // Set nextDirection too
+            game.isRunning = true;
             game.update();
 
             expect(game.snake[0].x).toBe(10);
@@ -195,6 +200,7 @@ describe('SnakeGame', () => {
         it('should die on bottom wall', () => {
             game.snake = [{ x: 10, y: game.rows - 1 }];
             game.direction = { x: 0, y: 1 };
+            game.changeDirection({ x: 0, y: 1 }); // Set nextDirection too
             game.start();
             game.update();
 
@@ -204,6 +210,7 @@ describe('SnakeGame', () => {
         it('should die on top wall', () => {
             game.snake = [{ x: 10, y: 0 }];
             game.direction = { x: 0, y: -1 };
+            game.changeDirection({ x: 0, y: -1 }); // Set nextDirection too
             game.start();
             game.update();
 
@@ -213,12 +220,13 @@ describe('SnakeGame', () => {
 
     describe('Food Collection', () => {
         it('should grow snake when eating food', () => {
-            const initialLength = game.snake.length;
             // Position snake next to food
             game.snake = [
                 { x: game.food.x - 1, y: game.food.y }
             ];
+            const initialLength = game.snake.length; // Get length AFTER positioning
             game.direction = { x: 1, y: 0 };
+            game.isRunning = true;
             game.update();
 
             expect(game.snake.length).toBe(initialLength + 1);
@@ -230,6 +238,7 @@ describe('SnakeGame', () => {
             ];
             game.direction = { x: 1, y: 0 };
             const initialScore = game.score;
+            game.isRunning = true;
             game.update();
 
             expect(game.score).toBe(initialScore + 10);
@@ -241,6 +250,7 @@ describe('SnakeGame', () => {
                 { x: game.food.x - 1, y: game.food.y }
             ];
             game.direction = { x: 1, y: 0 };
+            game.isRunning = true;
             game.update();
 
             expect(game.food).not.toEqual(oldFood);
@@ -260,6 +270,7 @@ describe('SnakeGame', () => {
                 { x: 5, y: 6 }
             ];
             game.direction = { x: 0, y: 1 };
+            game.changeDirection({ x: 0, y: 1 }); // Set nextDirection too
             game.update();
 
             expect(game.onGameOver).toHaveBeenCalled();

@@ -73,7 +73,6 @@ describe('BotPlayer', () => {
 
     describe('AI Decision Making', () => {
         it('should make AI decision', () => {
-            const initialDirection = { ...bot.direction };
             bot.makeAIDecision();
             // Direction may or may not change depending on food position
             expect(bot.direction).toBeDefined();
@@ -132,15 +131,25 @@ describe('BotPlayer', () => {
             bot.snake = [{ x: bot.food.x - 1, y: bot.food.y }];
             bot.direction = { x: 1, y: 0 };
             const initialScore = bot.score;
+            bot.isRunning = true;
+
+            // Mock makeAIDecision to not change direction
+            bot.makeAIDecision = jest.fn();
+
             bot.update();
 
             expect(bot.score).toBeGreaterThan(initialScore);
         });
 
         it('should grow when eating food', () => {
-            const initialLength = bot.snake.length;
             bot.snake = [{ x: bot.food.x - 1, y: bot.food.y }];
+            const initialLength = bot.snake.length; // Get length AFTER positioning
             bot.direction = { x: 1, y: 0 };
+            bot.isRunning = true;
+
+            // Mock makeAIDecision to not change direction
+            bot.makeAIDecision = jest.fn();
+
             bot.update();
 
             expect(bot.snake.length).toBe(initialLength + 1);
@@ -152,7 +161,6 @@ describe('BotPlayer', () => {
             bot.direction = { x: 1, y: 0 };
             bot.start();
 
-            const initialScore = bot.score;
             bot.update();
 
             // Should have reset
