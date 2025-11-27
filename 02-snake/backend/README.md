@@ -107,6 +107,20 @@ All 25 tests should pass, covering:
 - Score updates
 - Active players and spectator mode
 
+### API Verification
+
+To verify the API is working correctly against a running server:
+
+```bash
+# Start the server in one terminal
+uv run python main.py
+
+# In another terminal, run the verification script
+uv run python verify_api.py
+```
+
+The verification script ([verify_api.py](verify_api.py)) tests all endpoints and provides colored output showing which tests pass or fail.
+
 ## Mock Database
 
 The current implementation uses an in-memory mock database (`MockDatabase` in `app/database.py`) with the following features:

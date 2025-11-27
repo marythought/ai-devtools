@@ -51,3 +51,21 @@ uv run pytest tests/test_api.py
 # Run with coverage
 uv run pytest --cov=app tests/
 ```
+
+## API Verification
+
+```bash
+# Verify the running API server
+# (Make sure the server is running first with: uv run python main.py)
+uv run python verify_api.py
+```
+
+## Code Quality
+
+```bash
+# Check code with ruff
+uv run ruff check .
+
+# Format code with ruff
+uv run ruff format .
+```
