@@ -6,7 +6,7 @@
 import { describe, it, expect, beforeEach } from '@jest/globals';
 import { BotPlayer } from '../js/bot.js';
 
-const createMockCanvas = () => {
+const createMockCanvas = (): HTMLCanvasElement => {
     const canvas = document.createElement('canvas');
     canvas.width = 300;
     canvas.height = 300;
@@ -14,8 +14,8 @@ const createMockCanvas = () => {
 };
 
 describe('BotPlayer', () => {
-    let bot: any;
-    let canvas;
+    let bot: BotPlayer;
+    let canvas: HTMLCanvasElement;
 
     beforeEach(() => {
         canvas = createMockCanvas();

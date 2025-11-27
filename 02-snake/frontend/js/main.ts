@@ -235,7 +235,7 @@ class SnakeApp {
             speed: 150
         });
 
-        this.game.onGameOver = (score: number) => this.onGameOver(score);
+        this.game.onGameOver = (score: number): Promise<void> => this.onGameOver(score);
 
         // Load initial data
         this.loadLeaderboard();

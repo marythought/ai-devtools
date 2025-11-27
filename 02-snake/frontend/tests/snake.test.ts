@@ -7,7 +7,7 @@ import { describe, it, expect, beforeEach, jest } from '@jest/globals';
 import { SnakeGame } from '../js/snake.js';
 
 // Mock canvas
-const createMockCanvas = () => {
+const createMockCanvas = (): HTMLCanvasElement => {
     const canvas = document.createElement('canvas');
     canvas.width = 600;
     canvas.height = 600;
@@ -15,8 +15,8 @@ const createMockCanvas = () => {
 };
 
 describe('SnakeGame', () => {
-    let game: any;
-    let canvas;
+    let game: SnakeGame;
+    let canvas: HTMLCanvasElement;
 
     beforeEach(() => {
         canvas = createMockCanvas();

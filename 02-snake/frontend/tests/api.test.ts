@@ -7,7 +7,7 @@ import { describe, it, expect, beforeEach } from '@jest/globals';
 import { MockAPI } from '../js/api.js';
 
 describe('MockAPI', () => {
-    let api: any;
+    let api: MockAPI;
 
     beforeEach(() => {
         // Clear localStorage before each test

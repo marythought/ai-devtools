@@ -26,13 +26,13 @@ export interface BotState {
 }
 
 export class BotPlayer {
-    private canvas: HTMLCanvasElement;
-    private ctx: CanvasRenderingContext2D;
-    private gridSize: number;
-    private width: number;
-    private height: number;
-    private cols: number;
-    private rows: number;
+    private readonly canvas: HTMLCanvasElement;
+    private readonly ctx: CanvasRenderingContext2D;
+    private readonly gridSize: number;
+    private readonly width: number;
+    private readonly height: number;
+    private readonly cols: number;
+    private readonly rows: number;
 
     private snake: Position[];
     private direction: Position;
@@ -42,7 +42,15 @@ export class BotPlayer {
     private mode: 'pass-through' | 'walls';
     private speed: number;
     private gameLoop: NodeJS.Timeout | null;
-    private colors: GameColors;
+    private readonly colors: GameColors;
+
+    private static readonly SCORE_PER_FOOD = 10;
+    private static readonly DEFAULT_COLORS: GameColors = {
+        snake: '#2196f3',
+        snakeHead: '#1565c0',
+        food: '#ff9800',
+        grid: '#e0e0e0'
+    };
 
     constructor(canvas: HTMLCanvasElement, config: BotConfig = {}) {
         this.canvas = canvas;
@@ -66,12 +74,7 @@ export class BotPlayer {
         this.speed = config.speed || 200;
         this.gameLoop = null;
 
-        this.colors = {
-            snake: '#2196f3',
-            snakeHead: '#1565c0',
-            food: '#ff9800',
-            grid: '#e0e0e0'
-        };
+        this.colors = BotPlayer.DEFAULT_COLORS;
 
         this.init();
     }
@@ -143,7 +146,7 @@ export class BotPlayer {
         this.snake.unshift(head);
 
         if (this.food && head.x === this.food.x && head.y === this.food.y) {
-            this.score += 10;
+            this.score += BotPlayer.SCORE_PER_FOOD;
             this.spawnFood();
         } else {
             this.snake.pop();

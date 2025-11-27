@@ -4,9 +4,28 @@
 
 import { describe, it, expect, beforeEach, jest } from '@jest/globals';
 
+interface MockGame {
+    isRunning: boolean;
+    isPaused: boolean;
+    mode?: string;
+    start: jest.Mock;
+    stop: jest.Mock;
+    pause: jest.Mock;
+    reset: jest.Mock;
+    changeDirection: jest.Mock;
+}
+
+interface MockApp {
+    game: MockGame | null;
+    startGame: jest.Mock;
+    pauseGame: jest.Mock;
+    playAgain: jest.Mock;
+    handleKeyPress: (e: KeyboardEvent) => void;
+}
+
 describe('SnakeApp Keyboard Controls', () => {
-    let app: any;
-    let mockGame: any;
+    let app: MockApp;
+    let mockGame: MockGame;
 
     beforeEach(() => {
         // Setup DOM
@@ -30,23 +49,26 @@ describe('SnakeApp Keyboard Controls', () => {
         app = {
             game: mockGame,
 
-            startGame: jest.fn(function(this: any) {
+            startGame: jest.fn(function(this: MockApp): void {
+                if (!this.game) return;
                 this.game.isRunning = true;
                 this.game.start();
             }),
 
-            pauseGame: jest.fn(function(this: any) {
+            pauseGame: jest.fn(function(this: MockApp): void {
+                if (!this.game) return;
                 this.game.pause();
             }),
 
-            playAgain: jest.fn(function(this: any) {
+            playAgain: jest.fn(function(this: MockApp): void {
+                if (!this.game) return;
                 const overlay = document.getElementById('game-over-overlay');
                 overlay?.classList.add('hidden');
                 this.game.reset();
                 this.startGame();
             }),
 
-            handleKeyPress: function(this: any, e: KeyboardEvent) {
+            handleKeyPress: function(this: MockApp, e: KeyboardEvent): void {
                 if (!this.game) return;
 
                 // Spacebar to start, pause, or play again
@@ -275,16 +297,21 @@ describe('SnakeApp Keyboard Controls', () => {
 
         it('should initialize game with walls mode after login', () => {
             // Mock SnakeGame constructor
-            const mockSnakeGame = jest.fn(function(this: any, canvas: any, config: any) {
+            const mockSnakeGame = jest.fn(function(this: MockGame, _canvas: HTMLCanvasElement, config: { mode: string }) {
+                this.isRunning = false;
+                this.isPaused = false;
                 this.mode = config.mode;
                 this.start = jest.fn();
                 this.stop = jest.fn();
-                this.onGameOver = null;
+                this.pause = jest.fn();
+                this.reset = jest.fn();
+                this.changeDirection = jest.fn();
             });
 
             // Simulate showGameScreen behavior
             const canvas = document.createElement('canvas');
-            const game = new (mockSnakeGame as any)(canvas, {
+            type MockConstructor = new (canvas: HTMLCanvasElement, config: { mode: string; gridSize: number; speed: number }) => MockGame;
+            const game = new (mockSnakeGame as unknown as MockConstructor)(canvas, {
                 gridSize: 20,
                 mode: 'walls',
                 speed: 150

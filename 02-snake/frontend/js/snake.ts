@@ -33,13 +33,13 @@ export interface GameState {
 }
 
 export class SnakeGame {
-    private canvas: HTMLCanvasElement;
-    private ctx: CanvasRenderingContext2D;
-    private gridSize: number;
-    private width: number;
-    private height: number;
-    private cols: number;
-    private rows: number;
+    private readonly canvas: HTMLCanvasElement;
+    private readonly ctx: CanvasRenderingContext2D;
+    private readonly gridSize: number;
+    private readonly width: number;
+    private readonly height: number;
+    private readonly cols: number;
+    private readonly rows: number;
 
     private snake: Position[];
     private direction: Position;
@@ -51,9 +51,17 @@ export class SnakeGame {
     private mode: 'pass-through' | 'walls';
     private speed: number;
     private gameLoop: NodeJS.Timeout | null;
-    private colors: GameColors;
+    private readonly colors: GameColors;
 
-    public onGameOver: ((score: number) => void) | null;
+    public onGameOver: ((score: number) => void | Promise<void>) | null;
+
+    private static readonly SCORE_PER_FOOD = 10;
+    private static readonly DEFAULT_COLORS: GameColors = {
+        snake: '#4caf50',
+        snakeHead: '#2e7d32',
+        food: '#f44336',
+        grid: '#e0e0e0'
+    };
 
     constructor(canvas: HTMLCanvasElement, config: GameConfig = {}) {
         this.canvas = canvas;
@@ -82,12 +90,7 @@ export class SnakeGame {
         this.onGameOver = null;
 
         // Colors
-        this.colors = {
-            snake: '#4caf50',
-            snakeHead: '#2e7d32',
-            food: '#f44336',
-            grid: '#e0e0e0'
-        };
+        this.colors = SnakeGame.DEFAULT_COLORS;
 
         this.init();
     }
@@ -188,7 +191,7 @@ export class SnakeGame {
 
         // Check food collision
         if (this.food && head.x === this.food.x && head.y === this.food.y) {
-            this.score += 10;
+            this.score += SnakeGame.SCORE_PER_FOOD;
             this.spawnFood();
             // Don't remove tail (snake grows)
         } else {
