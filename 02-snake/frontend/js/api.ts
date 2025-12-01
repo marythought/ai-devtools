@@ -167,7 +167,7 @@ export class API {
 
         try {
             return await this.request<UserProfile>("/auth/current");
-        } catch (error) {
+        } catch {
             // Token might be invalid, clear it
             this.clearToken();
             return null;

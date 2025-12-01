@@ -11,6 +11,7 @@ export default [
       '*.js',
       '!eslint.config.js',
       '**/*.d.ts',
+      'vite.config.ts',
     ],
   },
   {
