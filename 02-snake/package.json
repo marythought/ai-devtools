@@ -1,0 +1,16 @@
+{
+  "name": "snake-game",
+  "version": "1.0.0",
+  "description": "Snake game with frontend and backend",
+  "scripts": {
+    "dev": "concurrently \"npm run dev:backend\" \"npm run dev:frontend\" --names \"backend,frontend\" --prefix-colors \"cyan,magenta\"",
+    "dev:backend": "cd backend && uv run python main.py",
+    "dev:frontend": "cd frontend && npm run dev",
+    "test": "concurrently \"npm run test:backend\" \"npm run test:frontend\" --names \"backend,frontend\" --prefix-colors \"cyan,magenta\" --kill-others-on-fail",
+    "test:backend": "cd backend && uv run pytest -v",
+    "test:frontend": "cd frontend && npm test"
+  },
+  "devDependencies": {
+    "concurrently": "^8.2.2"
+  }
+}

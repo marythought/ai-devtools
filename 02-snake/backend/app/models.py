@@ -16,6 +16,12 @@ class UserProfile(BaseModel):
     highScore: int = Field(ge=0)
 
 
+class AuthResponse(BaseModel):
+    username: str
+    highScore: int = Field(ge=0)
+    token: str
+
+
 class LeaderboardEntry(BaseModel):
     username: str
     score: int = Field(ge=0)

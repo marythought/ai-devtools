@@ -5,6 +5,7 @@ from app.models import (
     LoginRequest,
     SignupRequest,
     UserProfile,
+    AuthResponse,
     LeaderboardEntry,
     ActivePlayer,
     GameState,
@@ -41,7 +42,7 @@ def read_root():
     return {"message": "Snake Game API", "version": "1.0.0"}
 
 
-@app.post("/api/v1/auth/signup", response_model=UserProfile, status_code=201)
+@app.post("/api/v1/auth/signup", response_model=AuthResponse, status_code=201)
 def signup(request: SignupRequest):
     """Create a new user account."""
     # Validate username length
@@ -63,10 +64,19 @@ def signup(request: SignupRequest):
     if not db.create_user(request.username, password_hash):
         raise HTTPException(status_code=400, detail="Username already exists")
 
-    return UserProfile(username=request.username, highScore=0)
+    # Create access token
+    access_token = create_access_token(data={"sub": request.username})
+
+    # Store session
+    db.add_session(access_token, request.username)
+
+    # Mark user as active
+    db.set_player_active(request.username, score=0, playing=False)
+
+    return AuthResponse(username=request.username, highScore=0, token=access_token)
 
 
-@app.post("/api/v1/auth/login", response_model=UserProfile)
+@app.post("/api/v1/auth/login", response_model=AuthResponse)
 def login(request: LoginRequest):
     """Authenticate a user with username and password."""
     # Get user from database
@@ -88,7 +98,9 @@ def login(request: LoginRequest):
     # Mark user as active
     db.set_player_active(request.username, score=0, playing=False)
 
-    return UserProfile(username=request.username, highScore=user["high_score"])
+    return AuthResponse(
+        username=request.username, highScore=user["high_score"], token=access_token
+    )
 
 
 @app.post("/api/v1/auth/logout", response_model=LogoutResponse)

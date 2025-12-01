@@ -1,15 +1,10 @@
 /**
- * Mock Backend API Service
- * All backend calls are centralized here for easy migration to real backend
+ * Backend API Service
+ * All backend calls are centralized here
+ * Connects to FastAPI backend based on OpenAPI specifications
  */
 
-// Type Definitions
-export interface User {
-    username: string;
-    password: string;
-    highScore: number;
-}
-
+// Type Definitions matching OpenAPI specs
 export interface UserProfile {
     username: string;
     highScore: number;
@@ -32,235 +27,185 @@ export interface GameState {
     playing: boolean;
 }
 
-type UsersMap = Record<string, User>;
+interface LoginRequest {
+    username: string;
+    password: string;
+}
 
-export class MockAPI {
-    private users: UsersMap;
-    private currentUser: UserProfile | null;
-    private leaderboard: LeaderboardEntry[];
-    private activePlayers: ActivePlayer[];
+interface SignupRequest {
+    username: string;
+    password: string;
+}
 
-    constructor() {
-        this.users = this.loadUsers();
-        this.currentUser = this.loadCurrentUser();
-        this.leaderboard = this.loadLeaderboard();
-        this.activePlayers = [];
-        this.initializeMockData();
+interface ScoreUpdate {
+    username: string;
+    score: number;
+}
+
+interface ScoreUpdateResponse {
+    success: boolean;
+    updated: boolean;
+    newHighScore: number;
+}
+
+interface ErrorResponse {
+    detail: string;
+}
+
+export class API {
+    private baseUrl: string;
+    private token: string | null;
+
+    constructor(baseUrl: string = "http://localhost:8000/api/v1") {
+        this.baseUrl = baseUrl;
+        this.token = this.loadToken();
     }
 
-    // Local Storage Management
-    private loadUsers(): UsersMap {
-        const users = localStorage.getItem('snake_users');
-        return users ? JSON.parse(users) : {};
+    // Token Management
+    private loadToken(): string | null {
+        return localStorage.getItem("snake_auth_token");
     }
 
-    private saveUsers(): void {
-        localStorage.setItem('snake_users', JSON.stringify(this.users));
+    private saveToken(token: string): void {
+        localStorage.setItem("snake_auth_token", token);
+        this.token = token;
     }
 
-    private loadCurrentUser(): UserProfile | null {
-        const user = localStorage.getItem('snake_current_user');
-        return user ? JSON.parse(user) : null;
+    private clearToken(): void {
+        localStorage.removeItem("snake_auth_token");
+        this.token = null;
     }
 
-    private saveCurrentUser(user: UserProfile | null): void {
-        if (user) {
-            localStorage.setItem('snake_current_user', JSON.stringify(user));
-        } else {
-            localStorage.removeItem('snake_current_user');
-        }
-        this.currentUser = user;
-    }
+    // HTTP Helper Methods
+    private async request<T>(
+        endpoint: string,
+        options: RequestInit = {}
+    ): Promise<T> {
+        const url = `${this.baseUrl}${endpoint}`;
+        const headers: Record<string, string> = {
+            "Content-Type": "application/json",
+            ...((options.headers as Record<string, string>) || {}),
+        };
 
-    private loadLeaderboard(): LeaderboardEntry[] {
-        const leaderboard = localStorage.getItem('snake_leaderboard');
-        return leaderboard ? JSON.parse(leaderboard) : [];
-    }
-
-    private saveLeaderboard(): void {
-        localStorage.setItem('snake_leaderboard', JSON.stringify(this.leaderboard));
-    }
-
-    // Initialize Mock Data
-    private initializeMockData(): void {
-        // Add some mock users if none exist
-        if (Object.keys(this.users).length === 0) {
-            this.users = {
-                'player1': { username: 'player1', password: 'pass123', highScore: 250 },
-                'snakemaster': { username: 'snakemaster', password: 'pass123', highScore: 450 },
-                'gamer99': { username: 'gamer99', password: 'pass123', highScore: 180 },
-                'python_pro': { username: 'python_pro', password: 'pass123', highScore: 320 },
-                'speedrunner': { username: 'speedrunner', password: 'pass123', highScore: 390 }
-            };
-            this.saveUsers();
-        }
-
-        // Initialize leaderboard
-        if (this.leaderboard.length === 0) {
-            this.leaderboard = Object.values(this.users)
-                .map(user => ({ username: user.username, score: user.highScore }))
-                .sort((a, b) => b.score - a.score);
-            this.saveLeaderboard();
+        // Add auth token if available
+        if (this.token) {
+            headers["Authorization"] = `Bearer ${this.token}`;
         }
 
-        // Initialize active players (bots)
-        this.activePlayers = [
-            { username: 'snakemaster', score: 120, playing: true },
-            { username: 'gamer99', score: 80, playing: true },
-            { username: 'python_pro', score: 150, playing: true }
-        ];
+        const response = await fetch(url, {
+            ...options,
+            headers,
+        });
+
+        // Handle error responses
+        if (!response.ok) {
+            const error: ErrorResponse = await response.json();
+            throw new Error(error.detail || `HTTP error ${response.status}`);
+        }
+
+        return response.json();
     }
 
     // Authentication Methods
     async login(username: string, password: string): Promise<UserProfile> {
-        // Simulate network delay
-        await this.delay(500);
+        const body: LoginRequest = { username, password };
 
-        const user = this.users[username];
-        if (!user) {
-            throw new Error('User not found');
-        }
-        if (user.password !== password) {
-            throw new Error('Invalid password');
-        }
+        const response = await this.request<
+            UserProfile & { token: string }
+        >("/auth/login", {
+            method: "POST",
+            body: JSON.stringify(body),
+        });
 
-        const userProfile: UserProfile = {
-            username: user.username,
-            highScore: user.highScore || 0
+        // Save the token from the backend
+        this.saveToken(response.token);
+
+        // Return user profile without token
+        return {
+            username: response.username,
+            highScore: response.highScore,
         };
-        this.saveCurrentUser(userProfile);
-        return userProfile;
     }
 
     async signup(username: string, password: string): Promise<UserProfile> {
-        // Simulate network delay
-        await this.delay(500);
+        const body: SignupRequest = { username, password };
 
-        if (this.users[username]) {
-            throw new Error('Username already exists');
-        }
+        const response = await this.request<
+            UserProfile & { token: string }
+        >("/auth/signup", {
+            method: "POST",
+            body: JSON.stringify(body),
+        });
 
-        if (username.length < 3) {
-            throw new Error('Username must be at least 3 characters');
-        }
+        // Save the token from the backend
+        this.saveToken(response.token);
 
-        if (password.length < 6) {
-            throw new Error('Password must be at least 6 characters');
-        }
-
-        const newUser: User = {
-            username,
-            password,
-            highScore: 0
+        // Return user profile without token
+        return {
+            username: response.username,
+            highScore: response.highScore,
         };
-
-        this.users[username] = newUser;
-        this.saveUsers();
-
-        const userProfile: UserProfile = {
-            username: newUser.username,
-            highScore: newUser.highScore
-        };
-        this.saveCurrentUser(userProfile);
-        return userProfile;
     }
 
     async logout(): Promise<boolean> {
-        await this.delay(200);
-        this.saveCurrentUser(null);
+        try {
+            await this.request<{ success: boolean }>("/auth/logout", {
+                method: "POST",
+            });
+        } catch (error) {
+            console.error("Logout error:", error);
+        } finally {
+            this.clearToken();
+        }
         return true;
     }
 
-    getCurrentUser(): UserProfile | null {
-        return this.currentUser;
+    async getCurrentUser(): Promise<UserProfile | null> {
+        if (!this.token) {
+            return null;
+        }
+
+        try {
+            return await this.request<UserProfile>("/auth/current");
+        } catch (error) {
+            // Token might be invalid, clear it
+            this.clearToken();
+            return null;
+        }
     }
 
     // Leaderboard Methods
-    async getLeaderboard(): Promise<LeaderboardEntry[]> {
-        await this.delay(300);
-        return [...this.leaderboard].slice(0, 10); // Top 10
+    async getLeaderboard(limit: number = 10): Promise<LeaderboardEntry[]> {
+        return this.request<LeaderboardEntry[]>(
+            `/leaderboard?limit=${limit}`
+        );
     }
 
     async updateScore(username: string, score: number): Promise<boolean> {
-        await this.delay(200);
+        const body: ScoreUpdate = { username, score };
 
-        // Update user's high score if this is better
-        if (this.users[username]) {
-            if (score > (this.users[username].highScore || 0)) {
-                this.users[username].highScore = score;
-                this.saveUsers();
+        const response = await this.request<ScoreUpdateResponse>("/scores", {
+            method: "POST",
+            body: JSON.stringify(body),
+        });
 
-                // Update current user if it's them
-                if (this.currentUser && this.currentUser.username === username) {
-                    this.currentUser.highScore = score;
-                    this.saveCurrentUser(this.currentUser);
-                }
-            }
-        }
-
-        // Update leaderboard
-        const existingIndex = this.leaderboard.findIndex(entry => entry.username === username);
-        if (existingIndex >= 0) {
-            if (score > this.leaderboard[existingIndex].score) {
-                this.leaderboard[existingIndex].score = score;
-            }
-        } else {
-            this.leaderboard.push({ username, score });
-        }
-
-        this.leaderboard.sort((a, b) => b.score - a.score);
-        this.saveLeaderboard();
-
-        return true;
+        return response.success;
     }
 
     // Active Players / Spectator Methods
     async getActivePlayers(): Promise<ActivePlayer[]> {
-        await this.delay(200);
-        // Filter out current user
-        return this.activePlayers.filter(p =>
-            !this.currentUser || p.username !== this.currentUser.username
-        );
+        return this.request<ActivePlayer[]>("/players/active");
     }
 
     async getPlayerGameState(username: string): Promise<GameState> {
-        await this.delay(100);
-        const player = this.activePlayers.find(p => p.username === username);
-        if (!player) {
-            throw new Error('Player not found');
-        }
-
-        // Return mock game state
-        return {
-            username: player.username,
-            score: player.score,
-            playing: player.playing
-        };
+        return this.request<GameState>(`/players/${username}/state`);
     }
 
-    // Simulate other players' scores changing
-    simulateActivePlayers(): void {
-        setInterval(() => {
-            this.activePlayers.forEach(player => {
-                if (player.playing && Math.random() > 0.3) {
-                    player.score += Math.floor(Math.random() * 10) + 1;
-                }
-                // Randomly stop/start playing
-                if (Math.random() > 0.95) {
-                    player.playing = !player.playing;
-                    if (!player.playing) {
-                        player.score = 0;
-                    }
-                }
-            });
-        }, 2000);
-    }
-
-    // Utility
-    private delay(ms: number): Promise<void> {
-        return new Promise(resolve => setTimeout(resolve, ms));
+    // Helper to check if user is logged in
+    isLoggedIn(): boolean {
+        return this.token !== null;
     }
 }
 
 // Export singleton instance
-export const api = new MockAPI();
+export const api = new API();
