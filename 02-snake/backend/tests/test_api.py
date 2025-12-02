@@ -8,9 +8,7 @@ from app.database import db
 def client():
     """Create a test client."""
     # Clear database before each test
-    db.users.clear()
-    db.active_players.clear()
-    db.sessions.clear()
+    db.clear_all()
     return TestClient(app)
 
 

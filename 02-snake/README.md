@@ -140,7 +140,7 @@ npm run dev
 - **Frontend**: TypeScript/JavaScript with Vite
 - **Backend**: FastAPI (Python)
 - **Authentication**: JWT tokens with bcrypt password hashing
-- **Database**: Mock in-memory database (ready for PostgreSQL/SQLite)
+- **Database**: SQLite with SQLAlchemy ORM
 
 ### API Integration
 The frontend API client (`frontend/js/api.ts`) connects to the backend:
@@ -157,7 +157,7 @@ The frontend API client (`frontend/js/api.ts`) connects to the backend:
 
 ### Data Persistence
 - **Frontend**: JWT token in localStorage
-- **Backend**: In-memory mock database with:
+- **Backend**: SQLite database with:
   - User accounts (bcrypt hashed passwords)
   - High scores and leaderboard
   - Active player sessions
