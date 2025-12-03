@@ -4,4 +4,21 @@ version = "0.1.0"
 description = "Add your description here"
 readme = "README.md"
 requires-python = ">=3.9"
-dependencies = []
+dependencies = [
+    "bcrypt>=5.0.0",
+    "fastapi>=0.122.0",
+    "pydantic>=2.12.5",
+    "psycopg2-binary>=2.9.10",
+    "python-jose>=3.5.0",
+    "python-multipart>=0.0.20",
+    "requests>=2.32.5",
+    "sqlalchemy>=2.0.44",
+    "uvicorn>=0.38.0",
+]
+
+[dependency-groups]
+dev = [
+    "httpx>=0.28.1",
+    "pytest>=8.4.2",
+    "ruff>=0.14.6",
+]

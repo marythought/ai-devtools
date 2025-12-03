@@ -4,7 +4,7 @@
  */
 
 import { describe, it, expect, beforeEach, jest } from '@jest/globals';
-import { SnakeGame } from '../js/snake.js';
+import { SnakeGame } from '../src/snake.js';
 
 // Mock canvas
 const createMockCanvas = (): HTMLCanvasElement => {

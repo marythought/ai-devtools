@@ -23,7 +23,7 @@ class SnakeApp {
 
     async init(): Promise<void> {
         // Check if user is already logged in
-        this.currentUser = api.getCurrentUser();
+        this.currentUser = await api.getCurrentUser();
 
         if (this.currentUser) {
             this.showGameScreen();
@@ -32,7 +32,6 @@ class SnakeApp {
         }
 
         this.setupEventListeners();
-        api.simulateActivePlayers();
     }
 
     private setupEventListeners(): void {

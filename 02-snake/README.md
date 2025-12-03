@@ -1,6 +1,6 @@
-# 🐍 Multiplayer Snake Game - Implementation Guide
+# 🐍 Snake Game - Full Stack Application
 
-A fully-featured Snake game with multiplayer features, spectator mode, and leaderboard functionality. Built with vanilla JavaScript and comprehensive test coverage.
+A multiplayer snake game with spectator mode, featuring a React/TypeScript frontend and FastAPI backend with JWT authentication.
 
 ## Features
 
@@ -26,43 +26,65 @@ A fully-featured Snake game with multiplayer features, spectator mode, and leade
 - **LocalStorage Persistence**: User data and scores saved locally
 - **Fully Tested**: Comprehensive test suite with Jest
 
-## Getting Started
+## Quick Start
 
-### Prerequisites
-- Modern web browser with JavaScript enabled
-- Node.js (for running tests)
+### Option 1: Docker (Recommended for Production)
 
-### Installation
+See [docker/DOCKER.md](docker/DOCKER.md) for complete deployment guide.
 
-1. Navigate to the project directory:
 ```bash
-cd /path/to/ai-devtools/02-snake
+docker build -f docker/Dockerfile -t snake-game:latest .
+docker run -d -p 80:80 -e SECRET_KEY="your-secret-key" --name snake-game snake-game:latest
 ```
 
-2. Install dependencies (for testing):
+Access at http://localhost
+
+### Option 2: Local Development
+
+**Prerequisites:**
+- Node.js 18+ and npm
+- Python 3.9+
+- `uv` package manager for Python
+
+**Installation:**
+
+1. **Install frontend dependencies**:
 ```bash
+cd frontend
 npm install
 ```
 
-3. Serve the application:
+2. **Install backend dependencies**:
 ```bash
-npm run serve
+cd backend
+uv sync
 ```
 
-4. Open your browser to:
+**Run Both Services:**
+
+Backend:
+```bash
+cd backend
+uv run python -m app.main
 ```
-http://localhost:8000
+
+Frontend (in another terminal):
+```bash
+cd frontend
+npm run dev
 ```
+
+This starts:
+- Backend API at http://localhost:8000
+- Frontend at http://localhost:5173
 
 ## How to Play
 
 ### Login/Signup
-- **Demo Accounts**: Use any of these pre-existing accounts:
-  - Username: `player1`, Password: `pass123`
-  - Username: `snakemaster`, Password: `pass123`
-  - Username: `gamer99`, Password: `pass123`
-
 - **Create New Account**: Click "Sign up" and create your own account
+  - Username: minimum 3 characters
+  - Password: minimum 6 characters
+- All accounts are stored in the backend database
 
 ### Controls
 - **Arrow Keys**: Control snake direction (↑ ↓ ← →)
@@ -89,47 +111,63 @@ http://localhost:8000
 
 ```
 02-snake/
-├── index.html              # Main HTML file
-├── css/
-│   └── styles.css         # All styling
-├── js/
-│   ├── api.js            # Mock backend API (centralized)
-│   ├── snake.js          # Snake game logic
-│   ├── bot.js            # AI bot player
-│   └── main.js           # Application controller
-├── tests/
-│   ├── api.test.js       # API tests
-│   ├── snake.test.js     # Game logic tests
-│   └── bot.test.js       # Bot AI tests
-├── package.json
-├── jest.config.js
-└── README.md
+├── docker/               # Docker deployment
+│   ├── Dockerfile       # Single-container build
+│   ├── nginx.conf       # Nginx configuration
+│   ├── supervisord.conf # Process manager config
+│   ├── .dockerignore    # Docker build exclusions
+│   └── DOCKER.md        # Deployment guide
+├── frontend/            # React TypeScript frontend
+│   ├── src/             # Source files
+│   │   ├── api.ts      # API client
+│   │   ├── main.ts     # Main game logic
+│   │   ├── snake.ts    # Snake game engine
+│   │   └── bot.ts      # Bot AI
+│   ├── styles/          # CSS files
+│   ├── tests/           # Frontend tests
+│   └── package.json
+├── backend/             # FastAPI backend
+│   ├── app/
+│   │   ├── main.py     # API routes
+│   │   ├── models.py   # Pydantic models
+│   │   ├── auth.py     # JWT authentication
+│   │   └── database.py # Database manager
+│   ├── tests/           # Unit tests
+│   │   └── integration/ # Integration tests
+│   ├── AGENTS.md        # AI agent guidelines
+│   └── README.md
+├── INTEGRATION.md       # Integration guide
+└── README.md            # This file
 ```
 
-## Architecture Details
+## Architecture
 
-### Mock Backend API (`api.js`)
-All backend calls are centralized in this module for easy migration to a real backend:
+### Stack
+- **Frontend**: TypeScript/JavaScript with Vite
+- **Backend**: FastAPI (Python)
+- **Authentication**: JWT tokens with bcrypt password hashing
+- **Database**: SQLite with SQLAlchemy ORM
 
-**Authentication**:
-- `login(username, password)` - User login
-- `signup(username, password)` - User registration
-- `logout()` - User logout
-- `getCurrentUser()` - Get current logged-in user
+### API Integration
+The frontend API client (`frontend/src/api.ts`) connects to the backend:
 
-**Leaderboard**:
-- `getLeaderboard()` - Fetch top 10 players
-- `updateScore(username, score)` - Update player score
-
-**Spectator**:
-- `getActivePlayers()` - Get list of active players
-- `getPlayerGameState(username)` - Get player's game state
+**Endpoints** (all prefixed with `/api/v1`):
+- `POST /auth/signup` - Create account (returns JWT token)
+- `POST /auth/login` - Login (returns JWT token)
+- `POST /auth/logout` - Logout
+- `GET /auth/current` - Get current user
+- `GET /leaderboard` - Get top players
+- `POST /scores` - Submit score (authenticated)
+- `GET /players/active` - Get active players (authenticated)
+- `GET /players/{username}/state` - Get player state (authenticated)
 
 ### Data Persistence
-- **LocalStorage Keys**:
-  - `snake_users` - All registered users
-  - `snake_current_user` - Currently logged-in user
-  - `snake_leaderboard` - Leaderboard data
+- **Frontend**: JWT token in localStorage
+- **Backend**: SQLite database with:
+  - User accounts (bcrypt hashed passwords)
+  - High scores and leaderboard
+  - Active player sessions
+  - Game states for spectator mode
 
 ### Game Logic (`snake.js`)
 - Grid-based snake movement
@@ -146,67 +184,97 @@ All backend calls are centralized in this module for easy migration to a real ba
 
 ## Testing
 
-### Run Tests
+### Run All Tests
 ```bash
 npm test
 ```
+This runs both frontend and backend tests concurrently.
 
-### Run Tests in Watch Mode
+### Test Separately
+
+**Backend tests**:
 ```bash
-npm run test:watch
+cd backend
+uv run pytest -v
+```
+- 25 comprehensive tests
+- Authentication, leaderboard, scores, players endpoints
+- All tests passing ✅
+
+**Frontend tests**:
+```bash
+cd frontend
+npm test
 ```
 
-### Coverage Report
-Tests include comprehensive coverage of:
-- ✅ Authentication (login, signup, logout)
-- ✅ User persistence
+### Verify API Integration
+```bash
+# Start backend first
+cd backend
+uv run python main.py
+
+# In another terminal
+cd backend
+uv run python verify_api.py
+```
+
+### Test Coverage
+- ✅ User authentication with JWT
+- ✅ Password validation and hashing
 - ✅ Leaderboard functionality
-- ✅ Score updates
-- ✅ Snake movement (both modes)
-- ✅ Collision detection
-- ✅ Food collection
-- ✅ AI bot decision making
-- ✅ Game state management
+- ✅ Score tracking and updates
+- ✅ Active player monitoring
+- ✅ Spectator mode game states
+- ✅ Error handling and validation
+- ✅ CORS and security
 
-Current coverage: **80%+** across all modules
+## Development
 
-### Test Files
-- `tests/api.test.js` - 50+ tests for API functionality
-- `tests/snake.test.js` - 40+ tests for game logic
-- `tests/bot.test.js` - 25+ tests for AI bot
+### Backend Code Quality
+```bash
+cd backend
 
-## Technical Details
+# Check code
+uv run ruff check .
 
-### Technologies
-- **Vanilla JavaScript** (ES6 modules)
-- **Canvas API** for rendering
-- **LocalStorage** for persistence
-- **Jest** for testing
-- **CSS3** for styling
+# Format code
+uv run ruff format .
 
-### Browser Support
-- Chrome (recommended)
-- Firefox
-- Safari
-- Edge
+# Run tests
+uv run pytest -v
+```
 
-### Performance
-- Game runs at ~7 FPS (150ms per frame)
-- Bot runs at ~5 FPS (200ms per frame)
-- Efficient canvas rendering
-- No external dependencies for runtime
+All backend code passes ruff checks ✅
 
-## Future Enhancements (Real Backend)
+### Frontend Development
+```bash
+cd frontend
 
-When migrating to a real backend, only `api.js` needs modification:
+# Run dev server
+npm run dev
 
-1. Replace LocalStorage with HTTP requests
-2. Add WebSocket for real-time multiplayer
-3. Implement actual player matching
-4. Add chat functionality
-5. Store game replays
+# Run tests
+npm test
 
-The rest of the codebase remains unchanged!
+# Lint
+npm run lint
+```
+
+## Documentation
+
+- [Docker Deployment](docker/DOCKER.md) - Complete deployment guide
+- [Backend README](backend/README.md) - Backend-specific documentation
+- [Backend AGENTS.md](backend/AGENTS.md) - Guidelines for AI agents
+- [INTEGRATION.md](INTEGRATION.md) - Frontend-Backend integration guide
+
+## Deployment
+
+The application is ready for deployment via Docker. See [docker/DOCKER.md](docker/DOCKER.md) for:
+- Building and running locally
+- Cloud deployment (AWS, GCP, Azure, Docker Hub)
+- PostgreSQL configuration
+- Production best practices
+- Monitoring and troubleshooting
 
 ## License
 
