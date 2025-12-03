@@ -56,8 +56,11 @@ export class API {
     private baseUrl: string;
     private token: string | null;
 
-    constructor(baseUrl: string = "http://localhost:8000/api/v1") {
-        this.baseUrl = baseUrl;
+    constructor(baseUrl?: string) {
+        // Use relative URL for production (same domain), localhost for development
+        this.baseUrl = baseUrl || (window.location.hostname === 'localhost'
+            ? "http://localhost:8000/api/v1"
+            : "/api/v1");
         this.token = this.loadToken();
     }
 
