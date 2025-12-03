@@ -46,6 +46,9 @@ staticfiles/
 .env.local
 .env.*.local
 
+# Docker
+docker-compose.override.yml
+
 # Testing
 .coverage
 htmlcov/

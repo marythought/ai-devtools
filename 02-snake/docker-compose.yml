@@ -1,0 +1,61 @@
+services:
+  # PostgreSQL Database
+  db:
+    image: postgres:16-alpine
+    container_name: snake-db
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-snakedb}
+      POSTGRES_USER: ${POSTGRES_USER:-snakeuser}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-snakepass}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-snakeuser}"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    networks:
+      - snake-network
+
+  # FastAPI Backend
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: snake-backend
+    environment:
+      DATABASE_URL: postgresql://${POSTGRES_USER:-snakeuser}:${POSTGRES_PASSWORD:-snakepass}@db:5432/${POSTGRES_DB:-snakedb}
+      SECRET_KEY: ${SECRET_KEY:-your-secret-key-change-in-production}
+      ENVIRONMENT: ${ENVIRONMENT:-production}
+    ports:
+      - "8000:8000"
+    depends_on:
+      db:
+        condition: service_healthy
+    networks:
+      - snake-network
+    restart: unless-stopped
+
+  # Nginx Frontend
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: snake-frontend
+    ports:
+      - "80:80"
+    depends_on:
+      - backend
+    networks:
+      - snake-network
+    restart: unless-stopped
+
+volumes:
+  postgres_data:
+    driver: local
+
+networks:
+  snake-network:
+    driver: bridge

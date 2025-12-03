@@ -1,5 +1,6 @@
-"""Database layer using SQLAlchemy with SQLite."""
+"""Database layer using SQLAlchemy with SQLite or PostgreSQL."""
 
+import os
 from datetime import datetime, timezone
 from typing import Optional
 
@@ -12,12 +13,22 @@ from app.db_models import Base, GameSession, User
 class Database:
     """Database wrapper for SQLAlchemy operations."""
 
-    def __init__(self, database_url: str = "sqlite:///./snake_game.db"):
+    def __init__(self, database_url: str = None):
         """Initialize database connection."""
+        if database_url is None:
+            # Get database URL from environment variable, default to SQLite
+            database_url = os.getenv("DATABASE_URL", "sqlite:///./snake_game.db")
+
+        # Configure connect_args based on database type
+        connect_args = {}
+        if database_url.startswith("sqlite"):
+            connect_args = {"check_same_thread": False}
+
         self.engine = create_engine(
             database_url,
-            connect_args={"check_same_thread": False},  # Needed for SQLite
+            connect_args=connect_args,
             echo=False,  # Set to True for SQL query logging
+            pool_pre_ping=True,  # Enable connection health checks
         )
         self.SessionLocal = sessionmaker(
             autocommit=False, autoflush=False, bind=self.engine
