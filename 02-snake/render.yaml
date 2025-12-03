@@ -7,6 +7,7 @@ services:
     dockerContext: .
     plan: free
     region: oregon
+    dockerCommand: /usr/bin/supervisord -c /etc/supervisor/conf.d/supervisord.conf
     envVars:
       - key: SECRET_KEY
         generateValue: true
