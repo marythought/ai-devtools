@@ -1,0 +1,59 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+venv/
+.venv/
+ENV/
+*.egg-info/
+*.egg
+*.db
+
+# Frontend node modules (will be built in the container)
+frontend/node_modules/
+frontend/dist/
+
+# Backend artifacts
+backend/__pycache__/
+backend/*.db
+backend/.venv/
+
+# Git
+.git/
+.gitignore
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+
+# Environment
+.env
+.env.local
+.env.*.local
+
+# Docker
+docker-compose.yml
+docker-compose.override.yml
+backend/Dockerfile
+frontend/Dockerfile
+backend/.dockerignore
+frontend/.dockerignore
+
+# Testing
+.coverage
+htmlcov/
+.pytest_cache/
+.tox/
+coverage.xml
+tests/
+integration_tests/
+
+# Documentation
+*.md
+DOCKER.md

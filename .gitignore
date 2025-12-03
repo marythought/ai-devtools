@@ -56,6 +56,7 @@ htmlcov/
 .tox/
 coverage.xml
 pythonanywhere_deploy_key*
+.ruff_cache/
 
 # Node.js
 node_modules/

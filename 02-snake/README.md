@@ -28,54 +28,55 @@ A multiplayer snake game with spectator mode, featuring a React/TypeScript front
 
 ## Quick Start
 
-### Prerequisites
+### Option 1: Docker (Recommended for Production)
+
+See [docker/DOCKER.md](docker/DOCKER.md) for complete deployment guide.
+
+```bash
+docker build -f docker/Dockerfile -t snake-game:latest .
+docker run -d -p 80:80 -e SECRET_KEY="your-secret-key" --name snake-game snake-game:latest
+```
+
+Access at http://localhost
+
+### Option 2: Local Development
+
+**Prerequisites:**
 - Node.js 18+ and npm
 - Python 3.9+
 - `uv` package manager for Python
 
-### Installation
+**Installation:**
 
-1. **Install root dependencies** (concurrently):
-```bash
-npm install
-```
-
-2. **Install frontend dependencies**:
+1. **Install frontend dependencies**:
 ```bash
 cd frontend
 npm install
 ```
 
-3. **Install backend dependencies**:
+2. **Install backend dependencies**:
 ```bash
 cd backend
 uv sync
 ```
 
-### Run Both Frontend and Backend
+**Run Both Services:**
 
-**Option 1: Run both together** (recommended):
+Backend:
 ```bash
+cd backend
+uv run python -m app.main
+```
+
+Frontend (in another terminal):
+```bash
+cd frontend
 npm run dev
 ```
 
 This starts:
 - Backend API at http://localhost:8000
 - Frontend at http://localhost:5173
-
-**Option 2: Run separately**:
-
-Backend:
-```bash
-cd backend
-uv run python main.py
-```
-
-Frontend:
-```bash
-cd frontend
-npm run dev
-```
 
 ## How to Play
 
@@ -110,27 +111,32 @@ npm run dev
 
 ```
 02-snake/
-├── frontend/              # React TypeScript frontend
-│   ├── js/
-│   │   ├── api.ts        # Real API client (connects to backend)
-│   │   ├── main.ts       # Main game logic
-│   │   ├── snake.ts      # Snake game engine
-│   │   └── bot.ts        # Bot logic for spectator mode
-│   ├── tests/            # Frontend tests
+├── docker/               # Docker deployment
+│   ├── Dockerfile       # Single-container build
+│   ├── nginx.conf       # Nginx configuration
+│   ├── supervisord.conf # Process manager config
+│   ├── .dockerignore    # Docker build exclusions
+│   └── DOCKER.md        # Deployment guide
+├── frontend/            # React TypeScript frontend
+│   ├── src/             # Source files
+│   │   ├── api.ts      # API client
+│   │   ├── main.ts     # Main game logic
+│   │   ├── snake.ts    # Snake game engine
+│   │   └── bot.ts      # Bot AI
+│   ├── styles/          # CSS files
+│   ├── tests/           # Frontend tests
 │   └── package.json
-├── backend/              # FastAPI backend
+├── backend/             # FastAPI backend
 │   ├── app/
-│   │   ├── main.py      # API routes
-│   │   ├── models.py    # Pydantic models
-│   │   ├── auth.py      # JWT authentication
-│   │   └── database.py  # Mock database
-│   ├── tests/           # Backend tests (25 tests)
-│   ├── verify_api.py    # API verification script
+│   │   ├── main.py     # API routes
+│   │   ├── models.py   # Pydantic models
+│   │   ├── auth.py     # JWT authentication
+│   │   └── database.py # Database manager
+│   ├── tests/           # Unit tests
+│   │   └── integration/ # Integration tests
 │   ├── AGENTS.md        # AI agent guidelines
 │   └── README.md
-├── openapi.yaml         # API specification
 ├── INTEGRATION.md       # Integration guide
-├── package.json         # Root scripts for running both
 └── README.md            # This file
 ```
 
@@ -143,7 +149,7 @@ npm run dev
 - **Database**: SQLite with SQLAlchemy ORM
 
 ### API Integration
-The frontend API client (`frontend/js/api.ts`) connects to the backend:
+The frontend API client (`frontend/src/api.ts`) connects to the backend:
 
 **Endpoints** (all prefixed with `/api/v1`):
 - `POST /auth/signup` - Create account (returns JWT token)
@@ -256,19 +262,19 @@ npm run lint
 
 ## Documentation
 
+- [Docker Deployment](docker/DOCKER.md) - Complete deployment guide
 - [Backend README](backend/README.md) - Backend-specific documentation
 - [Backend AGENTS.md](backend/AGENTS.md) - Guidelines for AI agents
 - [INTEGRATION.md](INTEGRATION.md) - Frontend-Backend integration guide
-- [OpenAPI Spec](openapi.yaml) - API specification
 
-## Next Steps
+## Deployment
 
-- [ ] Replace mock database with PostgreSQL
-- [ ] Add database migrations (Alembic)
-- [ ] Implement WebSocket for real-time updates
-- [ ] Add rate limiting
-- [ ] Deploy to cloud (Render, Vercel, etc.)
-- [ ] Add CI/CD pipeline
+The application is ready for deployment via Docker. See [docker/DOCKER.md](docker/DOCKER.md) for:
+- Building and running locally
+- Cloud deployment (AWS, GCP, Azure, Docker Hub)
+- PostgreSQL configuration
+- Production best practices
+- Monitoring and troubleshooting
 
 ## License
 
