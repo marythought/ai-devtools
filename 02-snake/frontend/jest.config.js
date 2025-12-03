@@ -4,9 +4,9 @@ export default {
   setupFilesAfterEnv: ['<rootDir>/tests/setupTests.ts'],
   coverageDirectory: 'coverage',
   collectCoverageFrom: [
-    'js/**/*.ts',
-    '!js/main.ts', // Main app initialization - covered by integration tests
-    '!js/api.ts', // API client - covered by backend tests
+    'src/**/*.ts',
+    '!src/main.ts', // Main app initialization - covered by integration tests
+    '!src/api.ts', // API client - covered by backend tests
     '!**/node_modules/**'
   ],
   coverageThreshold: {

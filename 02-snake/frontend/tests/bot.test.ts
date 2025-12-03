@@ -4,7 +4,7 @@
  */
 
 import { describe, it, expect, beforeEach } from '@jest/globals';
-import { BotPlayer } from '../js/bot.js';
+import { BotPlayer } from '../src/bot.js';
 
 const createMockCanvas = (): HTMLCanvasElement => {
     const canvas = document.createElement('canvas');
