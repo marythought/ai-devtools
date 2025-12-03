@@ -203,9 +203,16 @@ class Database:
     def update_player_score(self, username: str, score: int):
         """Update active player's current score."""
         with self.get_session() as session:
-            game_session = session.execute(
-                select(GameSession).where(GameSession.username == username)
-            ).scalar_one_or_none()
+            # Find existing session for this username (get the most recent one)
+            game_session = (
+                session.execute(
+                    select(GameSession)
+                    .where(GameSession.username == username)
+                    .order_by(GameSession.last_active.desc())
+                )
+                .scalars()
+                .first()
+            )
 
             if game_session:
                 game_session.score = score
