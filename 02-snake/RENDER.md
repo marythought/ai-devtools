@@ -74,8 +74,6 @@ Render will auto-generate `SECRET_KEY` from render.yaml. You can also add it man
 openssl rand -base64 32
 ```
 
-Your SECRET_KEY: `Bun/Ao4c5l/T75QthmhTEiVL2vm/SJm3Bf5LW5mtAzc=`
-
 ### Step 5: Deploy!
 
 1. Click **"Create Web Service"**
