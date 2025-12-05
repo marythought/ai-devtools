@@ -1,0 +1,46 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model InterviewSession {
+  id            String   @id @default(cuid())
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+  expiresAt     DateTime?
+  language      String   @default("javascript")
+  code          String   @default("")
+
+  snapshots     CodeSnapshot[]
+  executions    CodeExecution[]
+}
+
+model CodeSnapshot {
+  id          String   @id @default(cuid())
+  sessionId   String
+  code        String
+  language    String
+  createdAt   DateTime @default(now())
+
+  session     InterviewSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+
+  @@index([sessionId])
+}
+
+model CodeExecution {
+  id          String   @id @default(cuid())
+  sessionId   String
+  code        String
+  language    String
+  output      String?
+  error       String?
+  executedAt  DateTime @default(now())
+
+  session     InterviewSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+
+  @@index([sessionId])
+}
