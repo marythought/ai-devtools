@@ -13,9 +13,22 @@ export default function SessionPage() {
   const [language, setLanguage] = useState('javascript')
   const [executionResult, setExecutionResult] = useState<ExecutionResult | null>(null)
   const [isExecuting, setIsExecuting] = useState(false)
+  const [userName, setUserName] = useState<string>('')
   const editorRef = useRef<any>(null)
 
-  const { socket, isConnected, users } = useWebSocket(sessionId!, 'Anonymous')
+  // Get or prompt for user name
+  useEffect(() => {
+    const storedName = localStorage.getItem('interview-username')
+    if (storedName) {
+      setUserName(storedName)
+    } else {
+      const name = prompt('Please enter your name:')?.trim() || 'Anonymous'
+      setUserName(name)
+      localStorage.setItem('interview-username', name)
+    }
+  }, [])
+
+  const { socket, isConnected, users } = useWebSocket(sessionId!, userName)
 
   useEffect(() => {
     async function loadSession() {
@@ -36,6 +49,16 @@ export default function SessionPage() {
   function handleLanguageChange(newLanguage: string) {
     setLanguage(newLanguage)
     socket?.emit('language-change', { sessionId, language: newLanguage })
+  }
+
+  function handleChangeName() {
+    const newName = prompt('Enter your name:', userName)?.trim()
+    if (newName && newName !== userName) {
+      setUserName(newName)
+      localStorage.setItem('interview-username', newName)
+      // Reconnect with new name
+      window.location.reload()
+    }
   }
 
   async function handleExecute() {
@@ -98,7 +121,7 @@ export default function SessionPage() {
           <LanguageSelector value={language} onChange={handleLanguageChange} />
         </div>
         <div className="flex items-center gap-4">
-          <UserPresence users={users} isConnected={isConnected} />
+          <UserPresence users={users} isConnected={isConnected} onChangeName={handleChangeName} />
           <ShareLink sessionId={sessionId} />
         </div>
       </header>

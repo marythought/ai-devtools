@@ -3,9 +3,10 @@ import type { User } from '@interview/shared'
 interface UserPresenceProps {
   users: User[]
   isConnected: boolean
+  onChangeName?: () => void
 }
 
-export default function UserPresence({ users, isConnected }: UserPresenceProps) {
+export default function UserPresence({ users, isConnected, onChangeName }: UserPresenceProps) {
   return (
     <div className="flex items-center gap-3">
       <div className="flex items-center gap-2">
@@ -35,6 +36,16 @@ export default function UserPresence({ users, isConnected }: UserPresenceProps) 
             )}
           </div>
         </div>
+      )}
+
+      {onChangeName && (
+        <button
+          onClick={onChangeName}
+          className="text-xs text-gray-400 hover:text-gray-300 underline"
+          title="Change your name"
+        >
+          Change name
+        </button>
       )}
     </div>
   )
