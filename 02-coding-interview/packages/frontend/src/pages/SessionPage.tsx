@@ -6,6 +6,7 @@ import ExecutionPanel from '../components/Editor/ExecutionPanel'
 import UserPresence from '../components/Session/UserPresence'
 import ShareLink from '../components/Session/ShareLink'
 import { useWebSocket } from '../hooks/useWebSocket'
+import { codeExecutionService } from '../services/codeExecution'
 import type { ExecutionResult } from '@interview/shared'
 
 export default function SessionPage() {
@@ -46,6 +47,13 @@ export default function SessionPage() {
     loadSession()
   }, [sessionId])
 
+  // Preload Pyodide for better performance
+  useEffect(() => {
+    if (language === 'python') {
+      codeExecutionService.preloadPyodide()
+    }
+  }, [language])
+
   function handleLanguageChange(newLanguage: string) {
     setLanguage(newLanguage)
     socket?.emit('language-change', { sessionId, language: newLanguage })
@@ -78,26 +86,13 @@ export default function SessionPage() {
     setExecutionResult(null)
 
     try {
-      const response = await fetch(`/api/sessions/${sessionId}/execute`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ code, language })
-      })
-
-      if (response.ok) {
-        const result = await response.json()
-        setExecutionResult(result)
-      } else {
-        const errorData = await response.json().catch(() => ({ error: 'Failed to execute code' }))
-        setExecutionResult({
-          error: errorData.error || 'Failed to execute code',
-          executionTime: 0
-        })
-      }
+      // Execute code in browser using WASM (Pyodide for Python, native for JavaScript)
+      const result = await codeExecutionService.executeCode(code, language)
+      setExecutionResult(result)
     } catch (error) {
       console.error('Error executing code:', error)
       setExecutionResult({
-        error: 'Network error: Failed to execute code',
+        error: error instanceof Error ? error.message : 'Failed to execute code',
         executionTime: 0
       })
     } finally {
@@ -129,7 +124,6 @@ export default function SessionPage() {
       <div className="flex-1 flex overflow-hidden">
         <div className="flex-1">
           <MonacoEditor
-            sessionId={sessionId}
             language={language}
             onExecute={handleExecute}
             editorRef={editorRef}

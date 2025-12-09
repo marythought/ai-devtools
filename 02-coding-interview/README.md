@@ -6,11 +6,13 @@ A real-time collaborative coding platform for conducting technical interviews wi
 
 - Real-time collaborative code editing with Yjs CRDTs
 - Monaco Editor with syntax highlighting for multiple languages
-- Live code execution in Docker containers
+- **Secure browser-based code execution** using WebAssembly (WASM)
+  - JavaScript: Native browser execution
+  - Python: Pyodide (Python compiled to WASM)
 - WebSocket-based real-time communication
 - User presence and cursor tracking
 - Session persistence and auto-save
-- Multi-language support (JavaScript, TypeScript, Python, Java, Go, Rust, C++)
+- Multi-language support (JavaScript, Python with WASM, TypeScript)
 
 ## Project Structure
 
@@ -78,6 +80,9 @@ This starts:
 ```bash
 npm run dev              # Start both frontend and backend
 npm run build            # Build all packages
+npm run test             # Run integration tests
+npm run test:watch       # Run tests in watch mode
+npm run test:coverage    # Run tests with coverage report
 npm run docker:up        # Start Docker services
 npm run docker:down      # Stop Docker services
 npm run db:migrate       # Run database migrations
@@ -100,8 +105,52 @@ cd packages/backend
 npm run dev              # Start dev server with hot reload
 npm run build            # Build for production
 npm run start            # Start production server
+npm run test             # Run integration tests
+npm run test:watch       # Run tests in watch mode
+npm run test:coverage    # Run tests with coverage
 npm run db:migrate       # Run Prisma migrations
 npm run db:studio        # Open Prisma Studio
+```
+
+## Testing
+
+The project includes comprehensive integration tests that verify client-server interactions.
+
+### Prerequisites for Testing
+
+Ensure Docker services (PostgreSQL and Redis) are running:
+
+```bash
+npm run docker:up
+```
+
+### Running Tests
+
+```bash
+# Run all integration tests
+npm test
+
+# Run tests in watch mode (auto-rerun on file changes)
+npm run test:watch
+
+# Run tests with coverage report
+npm run test:coverage
+```
+
+### Test Coverage
+
+The integration tests cover:
+- ✅ **REST API**: Session creation, retrieval, and code execution
+- ✅ **WebSocket**: Real-time connections, user presence, and session state
+- ✅ **Database**: Execution history and session persistence
+- ✅ **Code Execution**: JavaScript and Python code execution in Docker containers
+- ✅ **Error Handling**: Invalid inputs, missing sessions, and edge cases
+- ✅ **End-to-End Workflows**: Complete user journeys from session creation to code execution
+
+### Test Command (for homework)
+
+```bash
+npm test
 ```
 
 ## API Endpoints

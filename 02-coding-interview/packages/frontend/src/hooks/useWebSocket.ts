@@ -1,14 +1,16 @@
 import { useEffect, useRef, useState } from 'react'
-import { io, Socket } from 'socket.io-client'
+import ioClient from 'socket.io-client'
 import type { User } from '@interview/shared'
+
+type ClientSocket = ReturnType<typeof ioClient>
 
 export function useWebSocket(sessionId: string, username?: string) {
   const [isConnected, setIsConnected] = useState(false)
   const [users, setUsers] = useState<User[]>([])
-  const socketRef = useRef<Socket | null>(null)
+  const socketRef = useRef<ClientSocket | null>(null)
 
   useEffect(() => {
-    const socket = io('http://localhost:3001', {
+    const socket = ioClient('http://localhost:3001', {
       transports: ['websocket', 'polling']
     })
 

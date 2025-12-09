@@ -1,5 +1,7 @@
 import { Server as HTTPServer } from 'http'
+// @ts-ignore - no types available for y-websocket/bin/utils
 import { setupWSConnection } from 'y-websocket/bin/utils'
+// @ts-ignore - no types available for ws
 import { WebSocketServer } from 'ws'
 
 export function setupYjsWebSocket(httpServer: HTTPServer) {
@@ -15,7 +17,7 @@ export function setupYjsWebSocket(httpServer: HTTPServer) {
     const { pathname } = new URL(request.url || '', `http://${request.headers.host}`)
 
     if (pathname !== '/socket.io/') {
-      wss.handleUpgrade(request, socket, head, (ws) => {
+      wss.handleUpgrade(request, socket, head, (ws: any) => {
         wss.emit('connection', ws, request)
       })
     }

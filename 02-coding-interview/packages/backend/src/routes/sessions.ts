@@ -3,7 +3,7 @@ import type { PrismaClient } from '@prisma/client'
 import type Redis from 'ioredis'
 import { executeCode, validateCode } from '../services/execution.js'
 
-export default function sessionRoutes(prisma: PrismaClient, redis: Redis) {
+export default function sessionRoutes(prisma: PrismaClient, _redis: Redis) {
   const router = Router()
 
   // Create new session

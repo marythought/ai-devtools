@@ -2,13 +2,12 @@ import { useRef, MutableRefObject } from 'react'
 import Editor, { Monaco } from '@monaco-editor/react'
 
 interface MonacoEditorProps {
-  sessionId: string
   language: string
   onExecute?: () => void
   editorRef?: MutableRefObject<any>
 }
 
-export default function MonacoEditor({ sessionId, language, onExecute, editorRef: parentEditorRef }: MonacoEditorProps) {
+export default function MonacoEditor({ language, onExecute, editorRef: parentEditorRef }: MonacoEditorProps) {
   const localEditorRef = useRef<any>(null)
   const editorRef = parentEditorRef || localEditorRef
 
