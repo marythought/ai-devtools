@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef, useCallback } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { useParams } from 'react-router-dom'
 import MonacoEditor from '../components/Editor/MonacoEditor'
 import LanguageSelector from '../components/Editor/LanguageSelector'
@@ -8,15 +8,6 @@ import ShareLink from '../components/Session/ShareLink'
 import { useWebSocket } from '../hooks/useWebSocket'
 import { getDefaultCode } from '../utils/codeTemplates'
 import type { ExecutionResult } from '@interview/shared'
-
-// Debounce function
-function debounce<T extends (...args: any[]) => void>(func: T, wait: number): T {
-  let timeout: NodeJS.Timeout
-  return ((...args: any[]) => {
-    clearTimeout(timeout)
-    timeout = setTimeout(() => func(...args), wait)
-  }) as T
-}
 
 // Initialize username from localStorage before component renders
 function getInitialUsername(): string {

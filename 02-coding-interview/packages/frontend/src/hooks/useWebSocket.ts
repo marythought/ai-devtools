@@ -61,7 +61,7 @@ export function useWebSocket(sessionId: string, username?: string) {
       console.log('Cleaning up socket connection')
       socket.disconnect()
     }
-  }, [sessionId])
+  }, [sessionId, username])
 
   return {
     socket: socketRef.current,

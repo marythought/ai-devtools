@@ -53,7 +53,7 @@ export default function MonacoEditor({ language, onExecute, editorRef: parentEdi
         monacoRef.current.editor.setModelLanguage(model, language)
       }
     }
-  }, [language])
+  }, [language, editorRef])
 
   return (
     <div className="h-full flex flex-col">
