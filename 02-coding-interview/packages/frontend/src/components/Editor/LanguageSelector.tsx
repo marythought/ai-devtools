@@ -9,10 +9,7 @@ const languageLabels: Record<string, string> = {
   javascript: 'JavaScript',
   typescript: 'TypeScript',
   python: 'Python',
-  java: 'Java',
-  go: 'Go',
-  rust: 'Rust',
-  cpp: 'C++'
+  go: 'Go'
 }
 
 export default function LanguageSelector({ value, onChange }: LanguageSelectorProps) {

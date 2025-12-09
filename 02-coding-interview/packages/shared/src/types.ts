@@ -64,14 +64,11 @@ export interface ExecutionResult {
 }
 
 // Supported languages
-export type SupportedLanguage = 'javascript' | 'typescript' | 'python' | 'java' | 'go' | 'rust' | 'cpp'
+export type SupportedLanguage = 'javascript' | 'typescript' | 'python' | 'go'
 
 export const SUPPORTED_LANGUAGES: SupportedLanguage[] = [
   'javascript',
   'typescript',
   'python',
-  'java',
-  'go',
-  'rust',
-  'cpp'
+  'go'
 ]

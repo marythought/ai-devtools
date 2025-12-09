@@ -146,22 +146,91 @@ sys.stderr = io.StringIO()
   }
 
   /**
-   * Execute code in the browser based on language
+   * Execute code using Piston API (for Go and TypeScript)
+   */
+  private async executePiston(code: string, language: string): Promise<ExecutionResult> {
+    const startTime = performance.now()
+
+    // Map our language names to Piston language names
+    const languageMap: Record<string, { language: string; version: string }> = {
+      go: { language: 'go', version: '1.16.2' },
+      typescript: { language: 'typescript', version: '5.0.3' }
+    }
+
+    const pistonLanguage = languageMap[language.toLowerCase()]
+
+    if (!pistonLanguage) {
+      return {
+        error: `Language ${language} not supported by Piston API`,
+        executionTime: performance.now() - startTime
+      }
+    }
+
+    try {
+      const response = await fetch('https://emkc.org/api/v2/piston/execute', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          language: pistonLanguage.language,
+          version: pistonLanguage.version,
+          files: [
+            {
+              content: code
+            }
+          ]
+        })
+      })
+
+      if (!response.ok) {
+        throw new Error(`Piston API error: ${response.statusText}`)
+      }
+
+      const result = await response.json()
+      const executionTime = performance.now() - startTime
+
+      // Combine stdout and stderr
+      const output = result.run.stdout || ''
+      const error = result.run.stderr || ''
+
+      if (error) {
+        return { error, executionTime: Math.round(executionTime) }
+      }
+
+      return { output, executionTime: Math.round(executionTime) }
+    } catch (error: any) {
+      return {
+        error: error.message || 'Failed to execute code via Piston API',
+        executionTime: Math.round(performance.now() - startTime)
+      }
+    }
+  }
+
+  /**
+   * Execute code based on language (browser or Piston API)
    */
   async executeCode(code: string, language: string): Promise<ExecutionResult> {
     const normalizedLanguage = language.toLowerCase()
 
     switch (normalizedLanguage) {
       case 'javascript':
-      case 'typescript': // TypeScript will be treated as JavaScript
         return this.executeJavaScript(code)
+
+      case 'typescript':
+        // Use Piston API for proper TypeScript execution
+        return this.executePiston(code, 'typescript')
 
       case 'python':
         return this.executePython(code)
 
+      case 'go':
+        // Use Piston API for Go execution
+        return this.executePiston(code, 'go')
+
       default:
         return {
-          error: `Browser execution not supported for ${language}. Only JavaScript and Python are supported for secure in-browser execution.`,
+          error: `Execution not supported for ${language}.`,
           executionTime: 0
         }
     }

@@ -7,6 +7,7 @@ import UserPresence from '../components/Session/UserPresence'
 import ShareLink from '../components/Session/ShareLink'
 import { useWebSocket } from '../hooks/useWebSocket'
 import { codeExecutionService } from '../services/codeExecution'
+import { getDefaultCode } from '../utils/codeTemplates'
 import type { ExecutionResult } from '@interview/shared'
 
 export default function SessionPage() {
@@ -54,9 +55,41 @@ export default function SessionPage() {
     }
   }, [language])
 
+  // Set default code when editor is mounted or language changes
+  useEffect(() => {
+    if (editorRef.current) {
+      const currentCode = editorRef.current.getValue()
+      // Only set default code if editor is empty
+      if (!currentCode || currentCode.trim().length === 0) {
+        editorRef.current.setValue(getDefaultCode(language))
+      }
+    }
+  }, [language, editorRef.current])
+
   function handleLanguageChange(newLanguage: string) {
+    if (!editorRef.current) {
+      setLanguage(newLanguage)
+      socket?.emit('language-change', { sessionId, language: newLanguage })
+      return
+    }
+
+    const currentCode = editorRef.current.getValue()
+    const hasCode = currentCode && currentCode.trim().length > 0
+
+    if (hasCode) {
+      const confirmed = window.confirm(
+        'Do you want to change the language? Your current code will be lost.'
+      )
+      if (!confirmed) {
+        return
+      }
+    }
+
     setLanguage(newLanguage)
     socket?.emit('language-change', { sessionId, language: newLanguage })
+
+    // Set default code for new language
+    editorRef.current.setValue(getDefaultCode(newLanguage))
   }
 
   function handleChangeName() {
