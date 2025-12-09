@@ -1,21 +1,21 @@
 // Default code templates for each language
 export const codeTemplates: Record<string, string> = {
-  javascript: `const message = "Hello World!";
+  javascript: `const message = "Hello JavaScript!";
 
-function printMessage() {
-  console.log(message);
+function printMessage(msg) {
+  console.log(msg);
 }
 
-printMessage();`,
+printMessage(message);`,
 
-  python: `message = "Hello World!"
+  python: `message = "Hello Python!"
 
 def print_message():
     print(message)
 
 print_message()`,
 
-  typescript: `const message: string = "Hello World!";
+  typescript: `const message: string = "Hello TypeScript!";
 
 function printMessage(): void {
   console.log(message);
@@ -28,12 +28,23 @@ printMessage();`,
 import "fmt"
 
 func main() {
-    message := "Hello World!"
+    message := "Hello Go!"
     printMessage(message)
 }
 
 func printMessage(msg string) {
     fmt.Println(msg)
+}`,
+
+  java: `public class Main {
+    public static void main(String[] args) {
+        String message = "Hello Java!";
+        printMessage(message);
+    }
+
+    public static void printMessage(String msg) {
+        System.out.println(msg);
+    }
 }`,
 }
 

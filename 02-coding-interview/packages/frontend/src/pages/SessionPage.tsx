@@ -6,7 +6,6 @@ import ExecutionPanel from '../components/Editor/ExecutionPanel'
 import UserPresence from '../components/Session/UserPresence'
 import ShareLink from '../components/Session/ShareLink'
 import { useWebSocket } from '../hooks/useWebSocket'
-import { codeExecutionService } from '../services/codeExecution'
 import { getDefaultCode } from '../utils/codeTemplates'
 import type { ExecutionResult } from '@interview/shared'
 
@@ -48,13 +47,6 @@ export default function SessionPage() {
     loadSession()
   }, [sessionId])
 
-  // Preload Pyodide for better performance
-  useEffect(() => {
-    if (language === 'python') {
-      codeExecutionService.preloadPyodide()
-    }
-  }, [language])
-
   // Set default code when editor is mounted or language changes
   useEffect(() => {
     if (editorRef.current) {
@@ -64,7 +56,7 @@ export default function SessionPage() {
         editorRef.current.setValue(getDefaultCode(language))
       }
     }
-  }, [language, editorRef.current])
+  }, [language])
 
   function handleLanguageChange(newLanguage: string) {
     if (!editorRef.current) {
@@ -119,8 +111,21 @@ export default function SessionPage() {
     setExecutionResult(null)
 
     try {
-      // Execute code in browser using WASM (Pyodide for Python, native for JavaScript)
-      const result = await codeExecutionService.executeCode(code, language)
+      // Execute code via backend Docker service
+      const response = await fetch(`/api/sessions/${sessionId}/execute`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ code, language })
+      })
+
+      if (!response.ok) {
+        const error = await response.json()
+        throw new Error(error.error || 'Failed to execute code')
+      }
+
+      const result = await response.json()
       setExecutionResult(result)
     } catch (error) {
       console.error('Error executing code:', error)
