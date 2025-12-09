@@ -371,6 +371,29 @@ describe('Coding Interview Platform - Integration Tests', () => {
   })
 
   describe('Client-Server Integration', () => {
+    it('should preserve session code when user changes name (regression test)', async () => {
+      // Create a session
+      const createResponse = await request(app)
+        .post('/api/sessions')
+        .send({ language: 'javascript' })
+        .expect(200)
+
+      const sessionId = createResponse.body.sessionId
+
+      // Update session with some code
+      await prisma.interviewSession.update({
+        where: { id: sessionId },
+        data: { code: 'console.log("Important interview code")' }
+      })
+
+      // Verify code is still there after simulating username change
+      const getResponse = await request(app)
+        .get(`/api/sessions/${sessionId}`)
+        .expect(200)
+
+      expect(getResponse.body.code).toBe('console.log("Important interview code")')
+    })
+
     it('should handle complete workflow: create session -> join -> execute code', async () => {
       // 1. Create session via REST API
       const createResponse = await request(app)

@@ -10,6 +10,11 @@ export function useWebSocket(sessionId: string, username?: string) {
   const socketRef = useRef<ClientSocket | null>(null)
 
   useEffect(() => {
+    // Don't connect until we have a username
+    if (!username) {
+      return
+    }
+
     // Use window.location.origin in production, localhost in development
     const socketUrl = import.meta.env.PROD ? window.location.origin : 'http://localhost:3001'
     const socket = ioClient(socketUrl, {
@@ -19,7 +24,7 @@ export function useWebSocket(sessionId: string, username?: string) {
     socketRef.current = socket
 
     socket.on('connect', () => {
-      console.log('WebSocket connected:', socket.id)
+      console.log('WebSocket connected:', socket.id, 'username:', username)
       setIsConnected(true)
       socket.emit('join-session', sessionId, username)
     })
@@ -43,14 +48,20 @@ export function useWebSocket(sessionId: string, username?: string) {
       console.log('Language changed to:', language)
     })
 
+    socket.on('username-changed', ({ users: updatedUsers }: { users: User[] }) => {
+      console.log('Username changed, updating users:', updatedUsers.length)
+      setUsers(updatedUsers)
+    })
+
     socket.on('error', (error: any) => {
       console.error('WebSocket error:', error)
     })
 
     return () => {
+      console.log('Cleaning up socket connection')
       socket.disconnect()
     }
-  }, [sessionId, username])
+  }, [sessionId])
 
   return {
     socket: socketRef.current,

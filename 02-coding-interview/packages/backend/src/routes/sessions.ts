@@ -51,6 +51,34 @@ export default function sessionRoutes(prisma: PrismaClient, _redis: Redis) {
     }
   })
 
+  // Update session code
+  router.put('/:id/code', async (req, res) => {
+    try {
+      const { code } = req.body
+      const sessionId = req.params.id
+
+      // Validate session exists
+      const session = await prisma.interviewSession.findUnique({
+        where: { id: sessionId }
+      })
+
+      if (!session) {
+        return res.status(404).json({ error: 'Session not found' })
+      }
+
+      // Update session code
+      await prisma.interviewSession.update({
+        where: { id: sessionId },
+        data: { code }
+      })
+
+      res.json({ success: true })
+    } catch (error) {
+      console.error('Error updating session code:', error)
+      res.status(500).json({ error: 'Failed to update code' })
+    }
+  })
+
   // Execute code
   router.post('/:id/execute', async (req, res) => {
     try {

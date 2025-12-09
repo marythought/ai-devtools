@@ -6,14 +6,31 @@ function printMessage(msg) {
   console.log(msg);
 }
 
-printMessage(message);`,
+printMessage(message);
+const numbers = [1, 2, 3, 4, 5]
+const sum = numbers.reduce((a, b) => a + b, 0)
+console.log(\`Sum: \${sum}\`);
+console.log(\`Average: \${sum / numbers.length}\`)
+
+squares = numbers.map(x => x * x);
+console.log(\`Squares: \${squares}\`);
+`,
 
   python: `message = "Hello Python!"
 
-def print_message():
-    print(message)
+def print_message(msg):
+    print(msg)
 
-print_message()`,
+print_message(message)
+
+numbers = [1, 2, 3, 4, 5]
+total = sum(numbers)
+print(f"Sum: {total}")
+print(f"Average: {total / len(numbers)}")
+
+squares = [x**2 for x in numbers]
+print(f"Squares: {squares}")
+`,
 
   typescript: `const message: string = "Hello TypeScript!";
 
@@ -21,7 +38,16 @@ function printMessage(): void {
   console.log(message);
 }
 
-printMessage();`,
+printMessage();
+const numbers: number[] = [1, 2, 3, 4, 5];
+const sum: number = numbers.reduce((a, b) => a + b, 0);
+console.log(\`Sum: \${sum}\`);
+console.log(\`Average: \${sum / numbers.length}\`);
+
+const squares: number[] = numbers.map(x => x * x);
+console.log(\`Squares: \${squares}\`);
+
+`,
 
   go: `package main
 

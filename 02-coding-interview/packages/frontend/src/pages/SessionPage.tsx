@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect, useRef, useCallback } from 'react'
 import { useParams } from 'react-router-dom'
 import MonacoEditor from '../components/Editor/MonacoEditor'
 import LanguageSelector from '../components/Editor/LanguageSelector'
@@ -9,25 +9,33 @@ import { useWebSocket } from '../hooks/useWebSocket'
 import { getDefaultCode } from '../utils/codeTemplates'
 import type { ExecutionResult } from '@interview/shared'
 
+// Debounce function
+function debounce<T extends (...args: any[]) => void>(func: T, wait: number): T {
+  let timeout: NodeJS.Timeout
+  return ((...args: any[]) => {
+    clearTimeout(timeout)
+    timeout = setTimeout(() => func(...args), wait)
+  }) as T
+}
+
+// Initialize username from localStorage before component renders
+function getInitialUsername(): string {
+  const storedName = localStorage.getItem('interview-username')
+  if (storedName) {
+    return storedName
+  }
+  const name = prompt('Please enter your name:')?.trim() || 'Anonymous'
+  localStorage.setItem('interview-username', name)
+  return name
+}
+
 export default function SessionPage() {
   const { sessionId } = useParams<{ sessionId: string }>()
   const [language, setLanguage] = useState('javascript')
   const [executionResult, setExecutionResult] = useState<ExecutionResult | null>(null)
   const [isExecuting, setIsExecuting] = useState(false)
-  const [userName, setUserName] = useState<string>('')
+  const [userName, setUserName] = useState<string>(getInitialUsername)
   const editorRef = useRef<any>(null)
-
-  // Get or prompt for user name
-  useEffect(() => {
-    const storedName = localStorage.getItem('interview-username')
-    if (storedName) {
-      setUserName(storedName)
-    } else {
-      const name = prompt('Please enter your name:')?.trim() || 'Anonymous'
-      setUserName(name)
-      localStorage.setItem('interview-username', name)
-    }
-  }, [])
 
   const { socket, isConnected, users } = useWebSocket(sessionId!, userName)
 
@@ -39,6 +47,25 @@ export default function SessionPage() {
         if (response.ok) {
           const session = await response.json()
           setLanguage(session.language)
+
+          // Set code from session or use default template
+          if (editorRef.current) {
+            if (session.code && session.code.trim().length > 0) {
+              // Load existing code from session
+              editorRef.current.setValue(session.code)
+            } else {
+              // Set default template and save it to the session
+              const defaultCode = getDefaultCode(session.language)
+              editorRef.current.setValue(defaultCode)
+
+              // Save the default code to the database
+              await fetch(`/api/sessions/${sessionId}/code`, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ code: defaultCode })
+              })
+            }
+          }
         }
       } catch (error) {
         console.error('Error loading session:', error)
@@ -89,8 +116,8 @@ export default function SessionPage() {
     if (newName && newName !== userName) {
       setUserName(newName)
       localStorage.setItem('interview-username', newName)
-      // Reconnect with new name
-      window.location.reload()
+      // Notify other users of username change without reconnecting
+      socket?.emit('username-change', { sessionId, username: newName })
     }
   }
 

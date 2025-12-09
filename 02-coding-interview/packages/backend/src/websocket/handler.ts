@@ -43,9 +43,21 @@ export function setupWebSocket(
           JSON.stringify(user)
         )
 
-        // Get all users in session
+        // Get all users in session and verify they're still connected
         const usersData = await redis.hgetall(`session:${sessionId}:users`)
-        const users = Object.values(usersData).map(u => JSON.parse(u))
+        const connectedSockets = await io.in(sessionId).fetchSockets()
+        const connectedSocketIds = new Set(connectedSockets.map(s => s.id))
+
+        // Clean up disconnected users from Redis
+        const users: User[] = []
+        for (const [socketId, userData] of Object.entries(usersData)) {
+          if (connectedSocketIds.has(socketId)) {
+            users.push(JSON.parse(userData))
+          } else {
+            // Remove stale user from Redis
+            await redis.hdel(`session:${sessionId}:users`, socketId)
+          }
+        }
 
         // Notify all users
         io.to(sessionId).emit('user-joined', { userId: socket.id, username, users })
@@ -86,6 +98,33 @@ export function setupWebSocket(
         console.log(`Language changed to ${language} in session ${sessionId}`)
       } catch (error) {
         console.error('Error changing language:', error)
+      }
+    })
+
+    socket.on('username-change', async (data) => {
+      try {
+        const { sessionId, username } = data
+
+        // Update user in Redis
+        const userJson = await redis.hget(`session:${sessionId}:users`, socket.id)
+        if (userJson) {
+          const user = JSON.parse(userJson)
+          user.username = username
+          await redis.hset(
+            `session:${sessionId}:users`,
+            socket.id,
+            JSON.stringify(user)
+          )
+
+          // Get all users and notify everyone
+          const usersData = await redis.hgetall(`session:${sessionId}:users`)
+          const users = Object.values(usersData).map(u => JSON.parse(u))
+
+          io.to(sessionId).emit('username-changed', { userId: socket.id, username, users })
+          console.log(`Username changed to ${username} in session ${sessionId}`)
+        }
+      } catch (error) {
+        console.error('Error changing username:', error)
       }
     })
 

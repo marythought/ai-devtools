@@ -31,7 +31,7 @@ const LANGUAGE_CONFIGS: Record<string, LanguageConfig> = {
     image: 'node:20-alpine',
     command: (file: string) => `npx -y tsx ${file}`,
     extension: 'ts',
-    timeout: 10000
+    timeout: 15000
   },
   python: {
     image: 'python:3.11-alpine',
@@ -40,10 +40,11 @@ const LANGUAGE_CONFIGS: Record<string, LanguageConfig> = {
     timeout: 5000
   },
   java: {
-    image: 'openjdk:17-alpine',
+    image: 'eclipse-temurin:17-jdk',
     command: (file: string) => {
       const className = file.replace('.java', '')
-      return `javac ${file} && java ${className}`
+      // Compile to /tmp (writable) then run from there
+      return `javac -d /tmp ${file} && java -cp /tmp ${className}`
     },
     extension: 'java',
     timeout: 10000
@@ -92,8 +93,8 @@ export async function executeCode(code: string, language: string): Promise<Execu
     await writeFile(filepath, code)
 
     // Execute in Docker container with resource limits
-    // For Go and Rust, we need exec permissions in /tmp for compiled binaries
-    const tmpfsOptions = ['go', 'rust', 'cpp'].includes(language.toLowerCase())
+    // For Go, Rust, C++, and Java, we need exec permissions in /tmp for compiled binaries/classes
+    const tmpfsOptions = ['go', 'rust', 'cpp', 'java'].includes(language.toLowerCase())
       ? '--tmpfs /tmp:rw,exec,nosuid,size=100m'
       : '--tmpfs /tmp:rw,noexec,nosuid,size=10m'
 
@@ -102,11 +103,17 @@ export async function executeCode(code: string, language: string): Promise<Execu
       ? '--cpus=1.0'
       : '--cpus=0.5'
 
+    // TypeScript needs network access to download tsx on first run
+    const networkOption = language.toLowerCase() === 'typescript' ? '' : '--network=none'
+
+    // TypeScript needs writable filesystem for npm cache
+    const readOnlyOption = language.toLowerCase() === 'typescript' ? '' : '--read-only'
+
     const dockerCommand = `docker run --rm \
-      --memory=128m \
+      --memory=256m \
       ${cpuLimit} \
-      --network=none \
-      --read-only \
+      ${networkOption} \
+      ${readOnlyOption} \
       ${tmpfsOptions} \
       -v "${tempDir}:/workspace:ro" \
       -w /workspace \
@@ -119,6 +126,8 @@ export async function executeCode(code: string, language: string): Promise<Execu
     })
 
     const executionTime = Date.now() - startTime
+
+    console.log('Execution output:', { stdout: stdout?.length || 0, stderr: stderr?.length || 0 })
 
     return {
       output: stdout || undefined,
