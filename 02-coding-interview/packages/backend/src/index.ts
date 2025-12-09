@@ -2,11 +2,16 @@ import express from 'express'
 import { createServer } from 'http'
 import { Server } from 'socket.io'
 import cors from 'cors'
+import path from 'path'
+import { fileURLToPath } from 'url'
 import Redis from 'ioredis'
 import { PrismaClient } from '@prisma/client'
 import { setupWebSocket } from './websocket/handler.js'
 import { setupYjsWebSocket } from './websocket/yjs-server.js'
 import sessionRoutes from './routes/sessions.js'
+
+const __filename = fileURLToPath(import.meta.url)
+const __dirname = path.dirname(__filename)
 
 const app = express()
 const httpServer = createServer(app)
@@ -31,6 +36,17 @@ app.get('/health', (_req, res) => {
 
 // API routes
 app.use('/api/sessions', sessionRoutes(prisma, redis))
+
+// Serve static files from frontend build (in production)
+if (process.env.NODE_ENV === 'production') {
+  const frontendPath = path.join(__dirname, '../../frontend/dist')
+  app.use(express.static(frontendPath))
+
+  // SPA fallback - serve index.html for all non-API routes
+  app.get('*', (_req, res) => {
+    res.sendFile(path.join(frontendPath, 'index.html'))
+  })
+}
 
 // Setup WebSocket
 setupWebSocket(io, redis, redisSub, prisma)

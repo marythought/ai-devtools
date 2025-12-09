@@ -10,7 +10,9 @@ export function useWebSocket(sessionId: string, username?: string) {
   const socketRef = useRef<ClientSocket | null>(null)
 
   useEffect(() => {
-    const socket = ioClient('http://localhost:3001', {
+    // Use window.location.origin in production, localhost in development
+    const socketUrl = import.meta.env.PROD ? window.location.origin : 'http://localhost:3001'
+    const socket = ioClient(socketUrl, {
       transports: ['websocket', 'polling']
     })
 

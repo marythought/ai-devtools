@@ -33,13 +33,30 @@ A real-time collaborative coding platform for conducting technical interviews wi
 
 ## Getting Started
 
-### 1. Clone and Install Dependencies
+### Option 1: Docker (Recommended for Production)
+
+Run the entire application (frontend + backend + database + redis) in containers:
+
+```bash
+docker compose up --build
+```
+
+The application will be available at http://localhost:3001
+
+To stop:
+```bash
+docker compose down
+```
+
+### Option 2: Local Development
+
+#### 1. Clone and Install Dependencies
 
 ```bash
 npm install
 ```
 
-### 2. Start Infrastructure Services
+#### 2. Start Infrastructure Services
 
 ```bash
 npm run docker:up
@@ -47,7 +64,7 @@ npm run docker:up
 
 This starts PostgreSQL and Redis in Docker containers.
 
-### 3. Set Up Backend Environment
+#### 3. Set Up Backend Environment
 
 ```bash
 cd packages/backend
@@ -56,13 +73,13 @@ cp .env.example .env
 
 Edit `.env` if needed to match your setup.
 
-### 4. Run Database Migrations
+#### 4. Run Database Migrations
 
 ```bash
 npm run db:migrate
 ```
 
-### 5. Start Development Servers
+#### 5. Start Development Servers
 
 ```bash
 # From root directory
@@ -194,6 +211,35 @@ npm test
 - PostgreSQL
 - Redis
 - TypeScript
+
+## Deployment
+
+### Deploy to Render
+
+This application is configured for deployment on [Render](https://render.com) using the included `render.yaml` configuration.
+
+**Steps:**
+
+1. Push your code to GitHub
+2. Sign up/login to [Render](https://render.com)
+3. Click "New +" → "Blueprint"
+4. Connect your GitHub repository
+5. Select the repository containing this code
+6. Render will automatically detect `render.yaml` and create:
+   - PostgreSQL database (free tier)
+   - Redis instance (free tier)
+   - Web service running the Docker container
+
+The application will be available at: `https://your-app-name.onrender.com`
+
+**Note:** Free tier services on Render may spin down after inactivity and take 30-60 seconds to wake up.
+
+### Alternative Deployment Options
+
+- **Railway**: Similar blueprint-based deployment
+- **Fly.io**: Excellent Docker support with global edge deployment
+- **DigitalOcean App Platform**: Good for production workloads
+- **AWS ECS/Fargate**: For enterprise-scale deployments
 
 ## Next Steps
 

@@ -31,6 +31,25 @@ services:
       timeout: 5s
       retries: 5
 
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: interview-app
+    ports:
+      - "3001:3001"
+    environment:
+      - DATABASE_URL=postgresql://admin:password@postgres:5432/interview_platform
+      - REDIS_URL=redis://redis:6379
+      - PORT=3001
+      - NODE_ENV=production
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    command: sh -c "cd packages/backend && npx prisma migrate deploy && cd ../.. && node packages/backend/dist/index.js"
+
 volumes:
   postgres_data:
   redis_data:
