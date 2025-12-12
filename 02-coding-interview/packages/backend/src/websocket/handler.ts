@@ -48,6 +48,9 @@ export function setupWebSocket(
         const connectedSockets = await io.in(sessionId).fetchSockets()
         const connectedSocketIds = new Set(connectedSockets.map(s => s.id))
 
+        // Always include the current socket (might not be in fetchSockets yet due to race condition)
+        connectedSocketIds.add(socket.id)
+
         // Clean up disconnected users from Redis
         const users: User[] = []
         for (const [socketId, userData] of Object.entries(usersData)) {
