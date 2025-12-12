@@ -1,0 +1,136 @@
+name: CI for Coding Interview Platform
+
+on:
+  workflow_dispatch:
+  pull_request:
+    branches:
+      - main
+    paths:
+      - '02-coding-interview/**'
+  push:
+    branches:
+      - main
+    paths:
+      - '02-coding-interview/**'
+
+defaults:
+  run:
+    working-directory: 02-coding-interview
+
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Set up Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '20'
+        cache: 'npm'
+        cache-dependency-path: 02-coding-interview/package-lock.json
+
+    - name: Install dependencies
+      run: npm ci
+
+    - name: Run ESLint (Frontend)
+      run: npm run lint -w @interview/frontend
+
+    - name: Run TypeScript compiler check
+      run: npm run build
+
+  test:
+    runs-on: ubuntu-latest
+
+    services:
+      postgres:
+        image: postgres:15-alpine
+        env:
+          POSTGRES_DB: interview_platform
+          POSTGRES_USER: admin
+          POSTGRES_PASSWORD: password
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+      redis:
+        image: redis:7-alpine
+        ports:
+          - 6379:6379
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+      docker:
+        image: docker:dind
+        options: --privileged
+        ports:
+          - 2375:2375
+        env:
+          DOCKER_TLS_CERTDIR: ""
+
+    env:
+      DOCKER_HOST: tcp://localhost:2375
+
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Set up Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '20'
+        cache: 'npm'
+        cache-dependency-path: 02-coding-interview/package-lock.json
+
+    - name: Install dependencies
+      run: npm ci
+
+    - name: Set up environment
+      run: |
+        cd packages/backend
+        cp .env.example .env
+
+    - name: Generate Prisma Client
+      run: |
+        cd packages/backend
+        npx prisma generate
+
+    - name: Run database migrations
+      run: |
+        cd packages/backend
+        echo "Running migrations..."
+        npx prisma migrate deploy
+        echo "Migration exit code: $?"
+        echo "Verifying tables..."
+        npx prisma db execute --stdin <<< "SELECT tablename FROM pg_tables WHERE schemaname = 'public';"
+      env:
+        DATABASE_URL: postgresql://admin:password@localhost:5432/interview_platform
+
+    - name: Wait for Docker and pull images
+      run: |
+        echo "Waiting for Docker daemon..."
+        timeout 60 sh -c 'until docker info > /dev/null 2>&1; do sleep 2; done'
+        echo "Docker is ready. Pulling test images..."
+        docker pull node:20-alpine
+        docker pull python:3.11-alpine
+
+    - name: Run integration tests
+      run: npm test -- --verbose
+      env:
+        DATABASE_URL: postgresql://admin:password@localhost:5432/interview_platform
+        REDIS_URL: redis://localhost:6379
+        NODE_ENV: test
+
+    - name: Upload test results
+      if: always()
+      uses: actions/upload-artifact@v4
+      with:
+        name: test-results
+        path: 02-coding-interview/packages/backend/coverage/

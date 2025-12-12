@@ -1,0 +1,29 @@
+{
+  "name": "coding-interview-platform",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Real-time collaborative coding interview platform",
+  "workspaces": [
+    "packages/*"
+  ],
+  "scripts": {
+    "dev": "concurrently \"npm run dev -w @interview/backend\" \"npm run dev -w @interview/frontend\"",
+    "dev:backend": "npm run dev -w @interview/backend",
+    "dev:frontend": "npm run dev -w @interview/frontend",
+    "build": "npm run build -w @interview/shared && npm run build -w @interview/backend && npm run build -w @interview/frontend",
+    "test": "npm run test -w @interview/backend",
+    "test:watch": "npm run test:watch -w @interview/backend",
+    "test:coverage": "npm run test:coverage -w @interview/backend",
+    "docker:up": "command -v docker-compose >/dev/null 2>&1 && docker-compose up -d || docker compose up -d",
+    "docker:down": "command -v docker-compose >/dev/null 2>&1 && docker-compose down || docker compose down",
+    "db:migrate": "npm run db:migrate -w @interview/backend",
+    "db:studio": "npm run db:studio -w @interview/backend"
+  },
+  "devDependencies": {
+    "concurrently": "^8.2.2"
+  },
+  "engines": {
+    "node": ">=20.0.0",
+    "npm": ">=10.0.0"
+  }
+}
