@@ -105,7 +105,11 @@ jobs:
     - name: Run database migrations
       run: |
         cd packages/backend
+        echo "Running migrations..."
         npx prisma migrate deploy
+        echo "Migration exit code: $?"
+        echo "Verifying tables..."
+        npx prisma db execute --stdin <<< "SELECT tablename FROM pg_tables WHERE schemaname = 'public';"
       env:
         DATABASE_URL: postgresql://admin:password@localhost:5432/interview_platform
 
@@ -118,7 +122,7 @@ jobs:
         docker pull python:3.11-alpine
 
     - name: Run integration tests
-      run: npm test
+      run: npm test -- --verbose
       env:
         DATABASE_URL: postgresql://admin:password@localhost:5432/interview_platform
         REDIS_URL: redis://localhost:6379

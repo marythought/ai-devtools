@@ -1,11 +1,4 @@
-import { exec } from 'child_process'
-import { promisify } from 'util'
-import { writeFile, unlink, mkdir } from 'fs/promises'
-import { join } from 'path'
-import { randomUUID } from 'crypto'
-import { existsSync } from 'fs'
-
-const execAsync = promisify(exec)
+import { spawn } from 'child_process'
 
 interface ExecutionResult {
   output?: string
@@ -76,91 +69,106 @@ export async function executeCode(code: string, language: string): Promise<Execu
     throw new Error(`Unsupported language: ${language}`)
   }
 
-  const executionId = randomUUID()
-  const filename = language === 'java' ? 'Main.java' : `code_${executionId}.${config.extension}`
-  const tempDir = join('/tmp', `exec_${executionId}`)
-  const filepath = join(tempDir, filename)
+  const filename = language === 'java' ? 'Main.java' : `code.${config.extension}`
 
   const startTime = Date.now()
 
-  try {
-    // Create temp directory
-    if (!existsSync(tempDir)) {
-      await mkdir(tempDir, { recursive: true })
-    }
+  // For Go, Rust, C++, and Java, we need exec permissions in /tmp for compiled binaries/classes
+  const tmpfsTmpOptions = ['go', 'rust', 'cpp', 'java'].includes(language.toLowerCase())
+    ? '/tmp:rw,exec,nosuid,size=100m'
+    : '/tmp:rw,noexec,nosuid,size=10m'
 
-    // Write code to temp file
-    await writeFile(filepath, code)
+  // Compiled languages need more CPU for fast compilation
+  const cpuLimit = ['go', 'rust', 'cpp', 'java'].includes(language.toLowerCase())
+    ? '--cpus=1.0'
+    : '--cpus=0.5'
 
-    // Execute in Docker container with resource limits
-    // For Go, Rust, C++, and Java, we need exec permissions in /tmp for compiled binaries/classes
-    const tmpfsOptions = ['go', 'rust', 'cpp', 'java'].includes(language.toLowerCase())
-      ? '--tmpfs /tmp:rw,exec,nosuid,size=100m'
-      : '--tmpfs /tmp:rw,noexec,nosuid,size=10m'
+  // TypeScript needs network access to download tsx on first run
+  const networkOption = language.toLowerCase() === 'typescript' ? '' : '--network=none'
 
-    // Compiled languages need more CPU for fast compilation
-    const cpuLimit = ['go', 'rust', 'cpp', 'java'].includes(language.toLowerCase())
-      ? '--cpus=1.0'
-      : '--cpus=0.5'
+  // TypeScript needs writable filesystem for npm cache
+  const readOnlyOption = language.toLowerCase() === 'typescript' ? '' : '--read-only'
 
-    // TypeScript needs network access to download tsx on first run
-    const networkOption = language.toLowerCase() === 'typescript' ? '' : '--network=none'
+  // Escape code for shell - use base64 to avoid escaping issues
+  const base64Code = Buffer.from(code).toString('base64')
 
-    // TypeScript needs writable filesystem for npm cache
-    const readOnlyOption = language.toLowerCase() === 'typescript' ? '' : '--read-only'
+  // Write code inside container using base64 decode, then execute
+  const innerCommand = `echo '${base64Code}' | base64 -d > /workspace/${filename} && ${config.command(`/workspace/${filename}`)}`
 
-    const dockerCommand = `docker run --rm \
-      --memory=256m \
-      ${cpuLimit} \
-      ${networkOption} \
-      ${readOnlyOption} \
-      ${tmpfsOptions} \
-      -v "${tempDir}:/workspace:ro" \
-      -w /workspace \
-      ${config.image} \
-      timeout ${Math.floor((config.timeout || 5000) / 1000)}s sh -c "${config.command(filename)}"`
+  // Build args array, splitting flags properly
+  const dockerArgs: string[] = [
+    'run', '--rm',
+    '--memory=256m',
+    cpuLimit,
+  ]
 
-    const { stdout, stderr } = await execAsync(dockerCommand, {
-      timeout: (config.timeout || 5000) + 2000, // Add 2s buffer for Docker overhead
-      maxBuffer: 1024 * 1024 // 1MB output limit
+  if (networkOption) dockerArgs.push(networkOption)
+  if (readOnlyOption) dockerArgs.push(readOnlyOption)
+
+  // Add tmpfs options
+  dockerArgs.push('--tmpfs', tmpfsTmpOptions)
+  dockerArgs.push('--tmpfs', '/workspace:rw,exec,size=10m')
+  dockerArgs.push('-w', '/workspace')
+  dockerArgs.push(config.image)
+  dockerArgs.push('timeout', `${Math.floor((config.timeout || 5000) / 1000)}s`)
+  dockerArgs.push('sh', '-c', innerCommand)
+
+  return new Promise((resolve) => {
+    let stdout = ''
+    let stderr = ''
+    let killed = false
+
+    const proc = spawn('docker', dockerArgs, {
+      timeout: (config.timeout || 5000) + 2000
     })
 
-    const executionTime = Date.now() - startTime
+    proc.stdout.on('data', (data) => {
+      stdout += data.toString()
+    })
 
-    console.log('Execution output:', { stdout: stdout?.length || 0, stderr: stderr?.length || 0 })
+    proc.stderr.on('data', (data) => {
+      stderr += data.toString()
+    })
 
-    return {
-      output: stdout || undefined,
-      error: stderr || undefined,
-      executionTime
-    }
+    const timeoutId = setTimeout(() => {
+      killed = true
+      proc.kill('SIGTERM')
+    }, (config.timeout || 5000) + 2000)
 
-  } catch (error: any) {
-    const executionTime = Date.now() - startTime
+    proc.on('close', (exitCode) => {
+      clearTimeout(timeoutId)
+      const executionTime = Date.now() - startTime
 
-    // Handle timeout
-    if (error.killed || error.signal === 'SIGTERM') {
-      return {
-        error: 'Execution timeout: Code took too long to execute',
-        executionTime
+      console.log('Execution output:', { stdout: stdout?.length || 0, stderr: stderr?.length || 0, exitCode })
+
+      if (killed) {
+        resolve({
+          error: 'Execution timeout: Code took too long to execute',
+          executionTime
+        })
+      } else if (exitCode === 0) {
+        resolve({
+          output: stdout || undefined,
+          error: stderr || undefined,
+          executionTime
+        })
+      } else {
+        resolve({
+          error: stderr || stdout || 'Execution failed',
+          executionTime
+        })
       }
-    }
+    })
 
-    // Handle execution errors
-    return {
-      error: error.stderr || error.stdout || error.message || 'Execution failed',
-      executionTime
-    }
-  } finally {
-    // Clean up temp files
-    try {
-      await unlink(filepath)
-      // Remove temp directory
-      await execAsync(`rm -rf "${tempDir}"`)
-    } catch (e) {
-      console.error('Failed to cleanup temp files:', e)
-    }
-  }
+    proc.on('error', (error) => {
+      clearTimeout(timeoutId)
+      const executionTime = Date.now() - startTime
+      resolve({
+        error: error.message || 'Execution failed',
+        executionTime
+      })
+    })
+  })
 }
 
 // Helper function to validate code before execution
