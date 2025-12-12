@@ -26,6 +26,9 @@ FROM node:20-alpine
 
 WORKDIR /app
 
+# Install OpenSSL for Prisma compatibility with Alpine 3.21+
+RUN apk add --no-cache openssl
+
 # Copy package files for production install
 COPY package*.json ./
 COPY packages/shared/package*.json ./packages/shared/
@@ -43,7 +46,7 @@ COPY --from=builder /app/packages/frontend/dist ./packages/frontend/dist
 # Copy Prisma schema and migrations
 COPY packages/backend/prisma ./packages/backend/prisma
 
-# Generate Prisma Client
+# Generate Prisma Client (must be done in container for correct binary)
 RUN cd packages/backend && npx prisma generate
 
 # Expose port (Render uses PORT env var, defaults to 10000)
