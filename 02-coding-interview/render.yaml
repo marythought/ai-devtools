@@ -29,3 +29,5 @@ services:
         value: production
       - key: PORT
         value: 10000
+      - key: FRONTEND_URL
+        value: https://code-together-c6ry.onrender.com
