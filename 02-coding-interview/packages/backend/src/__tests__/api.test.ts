@@ -15,6 +15,7 @@ describe('Coding Interview Platform - Integration Tests', () => {
   let httpServer: ReturnType<typeof createServer>
   let io: Server
   let serverPort: number
+  let redisSub: Redis
 
   beforeAll(async () => {
     // Create Express app
@@ -40,8 +41,8 @@ describe('Coding Interview Platform - Integration Tests', () => {
       res.json({ status: 'ok' })
     })
 
-    // Setup WebSocket (don't create Redis subscriber in tests)
-    const redisSub = new Redis(process.env.REDIS_URL || 'redis://localhost:6379')
+    // Setup WebSocket
+    redisSub = new Redis(process.env.REDIS_URL || 'redis://localhost:6379')
     setupWebSocket(io, redis, redisSub, prisma)
 
     // Start server on random port
@@ -58,13 +59,16 @@ describe('Coding Interview Platform - Integration Tests', () => {
   })
 
   afterAll(async () => {
-    // Cleanup
-    await cleanupDatabase()
-    await disconnectAll()
-
-    // Close server
+    // Close server first
     io.close()
     httpServer.close()
+
+    // Close Redis subscriber
+    await redisSub.quit()
+
+    // Cleanup database and disconnect
+    await cleanupDatabase()
+    await disconnectAll()
   })
 
   describe('REST API Tests', () => {
