@@ -17,6 +17,9 @@ const PISTON_LANGUAGES: Record<string, { language: string; version: string }> = 
 
 const PISTON_API_URL = 'https://emkc.org/api/v2/piston'
 
+// Simple delay helper
+const delay = (ms: number) => new Promise(resolve => setTimeout(resolve, ms))
+
 export async function executeCode(code: string, language: string): Promise<ExecutionResult> {
   const langConfig = PISTON_LANGUAGES[language.toLowerCase()]
 
@@ -33,35 +36,53 @@ export async function executeCode(code: string, language: string): Promise<Execu
     // For Java, the filename must be Main.java and class must be Main
     const filename = language.toLowerCase() === 'java' ? 'Main.java' : `code.${getExtension(language)}`
 
-    const response = await fetch(`${PISTON_API_URL}/execute`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify({
-        language: langConfig.language,
-        version: langConfig.version,
-        files: [
-          {
-            name: filename,
-            content: code
-          }
-        ],
-        run_timeout: 10000 // 10 seconds max
+    // Retry logic for rate limiting
+    let response: Response | null = null
+    let lastError = ''
+
+    for (let attempt = 0; attempt < 3; attempt++) {
+      if (attempt > 0) {
+        await delay(300) // Wait 300ms between retries
+      }
+
+      response = await fetch(`${PISTON_API_URL}/execute`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          language: langConfig.language,
+          version: langConfig.version,
+          files: [
+            {
+              name: filename,
+              content: code
+            }
+          ],
+          run_timeout: 10000 // 10 seconds max
+        })
       })
-    })
+
+      if (response.ok || response.status !== 429) {
+        break
+      }
+
+      lastError = await response.text()
+    }
 
     const executionTime = Date.now() - startTime
 
-    if (!response.ok) {
-      const errorText = await response.text()
+    if (!response || !response.ok) {
+      const errorText = response ? await response.text() : lastError
       return {
-        error: `Execution service error: ${response.status} - ${errorText}`,
+        error: `Execution service error: ${response?.status || 'unknown'} - ${errorText}`,
         executionTime
       }
     }
 
-    const result = await response.json()
+    const result = (await response.json()) as {
+      run?: { stdout?: string; stderr?: string; code?: number; signal?: string; output?: string }
+    }
 
     // Piston returns { run: { stdout, stderr, code, signal, output } }
     const run = result.run || {}
@@ -114,28 +135,9 @@ export function validateCode(code: string, language: string): { valid: boolean; 
     return { valid: false, error: 'Code is too long (max 50KB)' }
   }
 
-  const config = LANGUAGE_CONFIGS[language.toLowerCase()]
-  if (!config) {
+  const langConfig = PISTON_LANGUAGES[language.toLowerCase()]
+  if (!langConfig) {
     return { valid: false, error: `Unsupported language: ${language}` }
-  }
-
-  // Check for potentially dangerous patterns
-  const dangerousPatterns = [
-    /require\s*\(\s*['"]child_process['"]\s*\)/i,
-    /import\s+subprocess/i,
-    /Runtime\.getRuntime\(\)/i,
-    /system\s*\(/i,
-    /eval\s*\(/i,
-    /exec\s*\(/i,
-  ]
-
-  for (const pattern of dangerousPatterns) {
-    if (pattern.test(code)) {
-      return {
-        valid: false,
-        error: 'Code contains potentially dangerous operations that are not allowed'
-      }
-    }
   }
 
   return { valid: true }
