@@ -47,7 +47,8 @@ COPY --from=builder /app/packages/frontend/dist ./packages/frontend/dist
 COPY packages/backend/prisma ./packages/backend/prisma
 
 # Generate Prisma Client (must be done in container for correct binary)
-RUN cd packages/backend && npx prisma generate
+# Provide dummy DATABASE_URL for schema validation during build (not used for actual connection)
+RUN cd packages/backend && DATABASE_URL="postgresql://dummy:dummy@localhost:5432/dummy" npx prisma generate
 
 # Expose port (Render uses PORT env var, defaults to 10000)
 EXPOSE 10000
@@ -56,5 +57,5 @@ EXPOSE 10000
 ENV NODE_ENV=production
 ENV PORT=10000
 
-# Start the backend server (which will serve the frontend)
-CMD ["node", "packages/backend/dist/index.js"]
+# Start the backend server (run migrations first, then start)
+CMD ["sh", "-c", "cd packages/backend && npx prisma migrate deploy && cd ../.. && node packages/backend/dist/index.js"]
