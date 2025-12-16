@@ -2,6 +2,8 @@
 
 A multiplayer snake game with spectator mode, featuring a React/TypeScript frontend and FastAPI backend with JWT authentication.
 
+https://snake-game-zioy.onrender.com/
+
 ## Features
 
 ### ✨ Game Modes

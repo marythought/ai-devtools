@@ -1,5 +1,4 @@
 import type { Server, Socket } from 'socket.io'
-import type Redis from 'ioredis'
 import type { PrismaClient } from '@prisma/client'
 
 interface User {
@@ -8,20 +7,13 @@ interface User {
   joinedAt: number
 }
 
+// In-memory storage for session users (single instance deployment)
+const sessionUsers = new Map<string, Map<string, User>>()
+
 export function setupWebSocket(
   io: Server,
-  redis: Redis,
-  redisSub: Redis,
   prisma: PrismaClient
 ) {
-  // Subscribe to Redis pub/sub for multi-instance support
-  redisSub.subscribe('code-changes')
-  redisSub.on('message', (channel, message) => {
-    if (channel === 'code-changes') {
-      const { sessionId, data } = JSON.parse(message)
-      io.to(sessionId).emit('code-change', data)
-    }
-  })
 
   io.on('connection', (socket: Socket) => {
     console.log('Client connected:', socket.id)
@@ -36,31 +28,14 @@ export function setupWebSocket(
           joinedAt: Date.now()
         }
 
-        // Store user info in Redis
-        await redis.hset(
-          `session:${sessionId}:users`,
-          socket.id,
-          JSON.stringify(user)
-        )
-
-        // Get all users in session and verify they're still connected
-        const usersData = await redis.hgetall(`session:${sessionId}:users`)
-        const connectedSockets = await io.in(sessionId).fetchSockets()
-        const connectedSocketIds = new Set(connectedSockets.map(s => s.id))
-
-        // Always include the current socket (might not be in fetchSockets yet due to race condition)
-        connectedSocketIds.add(socket.id)
-
-        // Clean up disconnected users from Redis
-        const users: User[] = []
-        for (const [socketId, userData] of Object.entries(usersData)) {
-          if (connectedSocketIds.has(socketId)) {
-            users.push(JSON.parse(userData))
-          } else {
-            // Remove stale user from Redis
-            await redis.hdel(`session:${sessionId}:users`, socketId)
-          }
+        // Store user info in memory
+        if (!sessionUsers.has(sessionId)) {
+          sessionUsers.set(sessionId, new Map())
         }
+        sessionUsers.get(sessionId)!.set(socket.id, user)
+
+        // Get all users in session
+        const users = Array.from(sessionUsers.get(sessionId)!.values())
 
         // Notify all users
         io.to(sessionId).emit('user-joined', { userId: socket.id, username, users })
@@ -108,20 +83,15 @@ export function setupWebSocket(
       try {
         const { sessionId, username } = data
 
-        // Update user in Redis
-        const userJson = await redis.hget(`session:${sessionId}:users`, socket.id)
-        if (userJson) {
-          const user = JSON.parse(userJson)
+        // Update user in memory
+        const sessionUsersMap = sessionUsers.get(sessionId)
+        if (sessionUsersMap && sessionUsersMap.has(socket.id)) {
+          const user = sessionUsersMap.get(socket.id)!
           user.username = username
-          await redis.hset(
-            `session:${sessionId}:users`,
-            socket.id,
-            JSON.stringify(user)
-          )
+          sessionUsersMap.set(socket.id, user)
 
           // Get all users and notify everyone
-          const usersData = await redis.hgetall(`session:${sessionId}:users`)
-          const users = Object.values(usersData).map(u => JSON.parse(u))
+          const users = Array.from(sessionUsersMap.values())
 
           io.to(sessionId).emit('username-changed', { userId: socket.id, username, users })
           console.log(`Username changed to ${username} in session ${sessionId}`)
@@ -134,19 +104,19 @@ export function setupWebSocket(
     socket.on('disconnect', async () => {
       console.log('Client disconnected:', socket.id)
 
-      // Find all rooms user was in
-      const rooms = Array.from(socket.rooms).filter(r => r !== socket.id)
-
-      for (const sessionId of rooms) {
-        try {
-          await redis.hdel(`session:${sessionId}:users`, socket.id)
-          const usersData = await redis.hgetall(`session:${sessionId}:users`)
-          const users = Object.values(usersData).map(u => JSON.parse(u))
+      // Find and remove user from all sessions they were in
+      for (const [sessionId, usersMap] of sessionUsers.entries()) {
+        if (usersMap.has(socket.id)) {
+          usersMap.delete(socket.id)
+          const users = Array.from(usersMap.values())
 
           io.to(sessionId).emit('user-left', { userId: socket.id, users })
           console.log(`User ${socket.id} left session ${sessionId}`)
-        } catch (error) {
-          console.error('Error handling disconnect:', error)
+
+          // Clean up empty sessions
+          if (usersMap.size === 0) {
+            sessionUsers.delete(sessionId)
+          }
         }
       }
     })

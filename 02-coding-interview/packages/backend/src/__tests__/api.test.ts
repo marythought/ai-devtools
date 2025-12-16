@@ -3,10 +3,9 @@ import { createServer } from 'http'
 import { Server } from 'socket.io'
 import ioClient from 'socket.io-client'
 import request from 'supertest'
-import Redis from 'ioredis'
 import sessionRoutes from '../routes/sessions.js'
 import { setupWebSocket } from '../websocket/handler.js'
-import { prisma, redis, cleanupDatabase, disconnectAll } from './setup.js'
+import { prisma, cleanupDatabase, disconnectAll } from './setup.js'
 
 type ClientSocket = ReturnType<typeof ioClient>
 
@@ -15,7 +14,6 @@ describe('Coding Interview Platform - Integration Tests', () => {
   let httpServer: ReturnType<typeof createServer>
   let io: Server
   let serverPort: number
-  let redisSub: Redis
 
   beforeAll(async () => {
     // Create Express app
@@ -34,7 +32,7 @@ describe('Coding Interview Platform - Integration Tests', () => {
     })
 
     // Setup routes
-    app.use('/api/sessions', sessionRoutes(prisma, redis))
+    app.use('/api/sessions', sessionRoutes(prisma))
 
     // Health check
     app.get('/health', (_req, res) => {
@@ -42,8 +40,7 @@ describe('Coding Interview Platform - Integration Tests', () => {
     })
 
     // Setup WebSocket
-    redisSub = new Redis(process.env.REDIS_URL || 'redis://localhost:6379')
-    setupWebSocket(io, redis, redisSub, prisma)
+    setupWebSocket(io, prisma)
 
     // Start server on random port
     await new Promise<void>((resolve) => {
@@ -62,9 +59,6 @@ describe('Coding Interview Platform - Integration Tests', () => {
     // Close server first
     io.close()
     httpServer.close()
-
-    // Close Redis subscriber
-    await redisSub.quit()
 
     // Cleanup database and disconnect
     await cleanupDatabase()
