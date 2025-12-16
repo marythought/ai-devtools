@@ -57,5 +57,6 @@ EXPOSE 10000
 ENV NODE_ENV=production
 ENV PORT=10000
 
-# Start the backend server (run migrations first, then start)
-CMD ["sh", "-c", "cd packages/backend && npx prisma migrate deploy && cd ../.. && node packages/backend/dist/index.js"]
+# Start the backend server (push schema to DB, then start)
+# Using db push instead of migrate deploy to handle shared databases
+CMD ["sh", "-c", "echo \"DATABASE_URL is set: ${DATABASE_URL:+yes}\" && cd packages/backend && npx prisma db push --skip-generate && cd ../.. && node packages/backend/dist/index.js"]
