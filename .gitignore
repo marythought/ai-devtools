@@ -68,3 +68,6 @@ coverage/
 # TypeScript
 dist/
 *.tsbuildinfo
+
+# Large files
+*.zip
